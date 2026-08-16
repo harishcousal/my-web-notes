@@ -17,13 +17,14 @@
             --btn-hover: rgba(255, 255, 255, 1);
             --accent: #0984e3;
             --danger: #d63031;
+            --dropdown-bg: #ffffff;
             --sidebar-width: 280px;
         }
 
         [data-theme="dark"] {
             --bg-gradient: linear-gradient(135deg, #1e272e 0%, #000000 100%);
             --glass-bg: rgba(30, 39, 46, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             --text-main: #f5f6fa;
             --text-muted: #a4b0be;
@@ -31,47 +32,31 @@
             --btn-hover: rgba(0, 0, 0, 0.7);
             --accent: #74b9ff;
             --danger: #ff7675;
+            --dropdown-bg: #2d3436;
         }
 
         * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
         
-        body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            display: flex; 
-            height: 100vh; 
-            background: var(--bg-gradient); 
-            color: var(--text-main); 
-            overflow: hidden;
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; height: 100vh; background: var(--bg-gradient); color: var(--text-main); overflow: hidden; }
         
         /* Glass Panels */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-        }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
 
         /* Screens */
         .screen { display: flex; flex: 1; height: 100%; width: 100%; }
         
         /* Login Screen */
-        #login-screen { flex-direction: column; max-width: 380px; margin: auto; padding: 40px; border-radius: 24px; box-shadow: var(--glass-shadow); height: fit-content; }
+        #login-screen { flex-direction: column; max-width: 380px; margin: auto; padding: 40px; border-radius: 24px; height: fit-content; }
         #login-screen h2 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
-        #login-screen input { 
-            background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); 
-            margin-bottom: 15px; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; outline: none;
-        }
+        #login-screen input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); margin-bottom: 15px; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; outline: none; }
         #login-screen input:focus { border-color: var(--accent); }
         
         /* Layout */
-        .sidebar { width: var(--sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--glass-border); z-index: 10; }
+        .sidebar { width: var(--sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--glass-border); z-index: 10; border-radius: 0; }
         .sidebar-header { padding: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--glass-border); }
         .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
         .sidebar-footer { padding: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
-        
-        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 40px; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 40px; position: relative; }
         .editor-wrapper { max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; flex: 1; }
         
         /* Buttons */
@@ -89,40 +74,45 @@
         
         /* Unified Rich Text Editor */
         .top-bar { display: flex; gap: 12px; padding: 15px 0; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); align-items: center; }
-        
         #note-title { font-size: 3em; font-weight: 800; border: none; margin-bottom: 10px; color: var(--text-main); width: 100%; background: transparent; outline: none; letter-spacing: -1px; }
         
         /* Wordpad-style Formatting Toolbar */
         .format-toolbar {
-            display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
-            background: var(--glass-bg); padding: 10px 15px; border-radius: 16px;
-            border: 1px solid var(--glass-border); margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: -40px; z-index: 5;
+            display: flex; gap: 5px; flex-wrap: wrap; align-items: center; background: var(--glass-bg); padding: 10px 15px; border-radius: 16px;
+            border: 1px solid var(--glass-border); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: -40px; z-index: 5;
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
         }
-        .format-btn {
-            background: transparent; border: none; border-radius: 8px; padding: 6px 10px; font-size: 15px; font-weight: bold; cursor: pointer; color: var(--text-main); box-shadow: none;
-        }
+        .format-btn { background: transparent; border: none; border-radius: 8px; padding: 6px 10px; font-size: 15px; font-weight: bold; cursor: pointer; color: var(--text-main); box-shadow: none; }
         .format-btn:hover { background: rgba(0,0,0,0.05); transform: none; }
         [data-theme="dark"] .format-btn:hover { background: rgba(255,255,255,0.1); }
+        
+        /* Custom Dropdown Styling */
         .format-select {
-            background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 10px; outline: none; font-family: inherit; font-size: 13px; cursor: pointer;
+            background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px 12px; 
+            outline: none; font-family: inherit; font-size: 13px; cursor: pointer; font-weight: 600; appearance: none; /* Hides default arrow */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; padding-right: 25px;
         }
-        .color-picker {
-            border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; background: transparent; overflow: hidden;
-        }
-        .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-        .color-picker::-webkit-color-swatch { border: 1px solid var(--glass-border); border-radius: 50%; }
+        .format-select option { background-color: var(--dropdown-bg); color: var(--text-main); }
         .divider { width: 1px; height: 24px; background: var(--glass-border); margin: 0 5px; }
+
+        /* Custom Color Menu */
+        .color-dot-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #custom-color-menu {
+            position: absolute; display: none; flex-direction: column; gap: 15px; padding: 15px; width: 220px;
+            border-radius: 16px; z-index: 100; left: 0; top: 60px;
+        }
+        .swatch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .swatch { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .swatch:hover { transform: scale(1.1); }
+        .custom-hex-input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px; width: 100%; font-family: monospace; font-size: 13px; outline: none; }
 
         #note-editor { flex: 1; outline: none; font-size: 1.15em; line-height: 1.7; padding-bottom: 50px; }
         #note-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
         
-        /* Draggable Images */
         .note-image { max-width: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); cursor: grab; margin: 20px 0; transition: transform 0.2s; border: 1px solid var(--glass-border); }
         .note-image:active { cursor: grabbing; transform: scale(0.98); }
         
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
@@ -130,7 +120,6 @@
 </head>
 <body>
 
-    <!-- Login Screen -->
     <div id="login-screen" class="screen glass-panel">
         <h2>Welcome to Notes</h2>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">Connect your secure GitHub vault.</p>
@@ -140,10 +129,7 @@
         <button class="primary" style="width: 100%; padding: 14px;" onclick="login()">Enter Vault</button>
     </div>
 
-    <!-- Main App -->
     <div id="app-screen" class="screen" style="display:none;">
-        
-        <!-- Sidebar -->
         <div class="sidebar glass-panel">
             <div class="sidebar-header">
                 <button class="primary" style="flex:1;" onclick="openNote('')">+ New Note</button>
@@ -155,7 +141,6 @@
             </div>
         </div>
         
-        <!-- Main Editor Area -->
         <div class="main">
             <div class="editor-wrapper" id="editor-container" style="display:none;">
                 
@@ -172,53 +157,76 @@
 
                 <input id="note-title" placeholder="Untitled Note">
                 
-                <!-- NEW FORMATTING TOOLBAR -->
-                <div class="format-toolbar" id="format-toolbar">
+                <div class="format-toolbar" id="format-toolbar" style="position: relative;">
                     <select class="format-select" onchange="formatDoc('fontName', this.value)">
                         <option value="Arial">Arial</option>
                         <option value="Courier New">Courier New</option>
                         <option value="Georgia">Georgia</option>
-                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Times New Roman">Times</option>
                         <option value="Verdana">Verdana</option>
-                        <option value="Comic Sans MS">Comic Sans</option>
                     </select>
                     <select class="format-select" onchange="formatDoc('fontSize', this.value)">
-                        <option value="3">Normal Size</option>
-                        <option value="1">Smallest</option>
-                        <option value="2">Small</option>
+                        <option value="3">Normal</option>
+                        <option value="1">Tiny</option>
                         <option value="4">Large</option>
-                        <option value="5">Larger</option>
                         <option value="6">Huge</option>
                     </select>
                     
                     <div class="divider"></div>
                     
-                    <button class="format-btn" onclick="formatDoc('bold')" title="Bold"><b>B</b></button>
-                    <button class="format-btn" onclick="formatDoc('italic')" title="Italic"><i>I</i></button>
-                    <button class="format-btn" onclick="formatDoc('underline')" title="Underline"><u>U</u></button>
-                    <button class="format-btn" onclick="formatDoc('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                    <button class="format-btn" onclick="formatDoc('bold')"><b>B</b></button>
+                    <button class="format-btn" onclick="formatDoc('italic')"><i>I</i></button>
+                    <button class="format-btn" onclick="formatDoc('underline')"><u>U</u></button>
+                    <button class="format-btn" onclick="formatDoc('strikeThrough')"><s>S</s></button>
                     
                     <div class="divider"></div>
                     
-                    <button class="format-btn" onclick="formatDoc('justifyLeft')" title="Align Left">⬅️</button>
-                    <button class="format-btn" onclick="formatDoc('justifyCenter')" title="Align Center">↔️</button>
-                    <button class="format-btn" onclick="formatDoc('justifyRight')" title="Align Right">➡️</button>
+                    <button class="format-btn" onclick="formatDoc('justifyLeft')">⬅️</button>
+                    <button class="format-btn" onclick="formatDoc('justifyCenter')">↔️</button>
+                    <button class="format-btn" onclick="formatDoc('justifyRight')">➡️</button>
                     
                     <div class="divider"></div>
                     
-                    <button class="format-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet List">● List</button>
-                    <button class="format-btn" onclick="formatDoc('insertOrderedList')" title="Numbered List">1. List</button>
+                    <button class="format-btn" onclick="formatDoc('insertUnorderedList')">● List</button>
+                    <button class="format-btn" onclick="formatDoc('insertOrderedList')">1. List</button>
                     
                     <div class="divider"></div>
                     
+                    <!-- Custom Color Triggers -->
                     <div style="display: flex; align-items: center; gap: 5px;" title="Text Color">
-                        <span style="font-size: 12px; color: var(--text-muted); font-weight: bold;">A</span>
-                        <input type="color" class="color-picker" onchange="formatDoc('foreColor', this.value)" value="#0984e3">
+                        <span style="font-size: 13px; font-weight: bold;">A</span>
+                        <div class="color-dot-btn" style="background: #0984e3;" onclick="openColorMenu('foreColor', event)"></div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 5px; margin-left: 5px;" title="Highlight Color">
-                        <span style="font-size: 12px; color: var(--text-muted); font-weight: bold;">🖌️</span>
-                        <input type="color" class="color-picker" onchange="formatDoc('hiliteColor', this.value)" value="#ffeaa7">
+                    
+                    <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;" title="Highlight Color">
+                        <span style="font-size: 13px; font-weight: bold;">🖌️</span>
+                        <div class="color-dot-btn" style="background: #ffeaa7;" onclick="openColorMenu('hiliteColor', event)"></div>
+                        <button class="format-btn" style="padding: 4px;" onclick="formatDoc('hiliteColor', 'transparent')" title="Remove Highlight">❌</button>
                     </div>
+
+                    <!-- The Custom Glass Color Menu (Hidden by default) -->
+                    <div id="custom-color-menu" class="glass-panel">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: -5px;" id="color-menu-title">Pick Color</div>
+                        <div class="swatch-grid">
+                            <div class="swatch" style="background: #d63031;" onclick="applyColor('#d63031')"></div>
+                            <div class="swatch" style="background: #e84393;" onclick="applyColor('#e84393')"></div>
+                            <div class="swatch" style="background: #9b59b6;" onclick="applyColor('#9b59b6')"></div>
+                            <div class="swatch" style="background: #0984e3;" onclick="applyColor('#0984e3')"></div>
+                            <div class="swatch" style="background: #00cec9;" onclick="applyColor('#00cec9')"></div>
+                            <div class="swatch" style="background: #00b894;" onclick="applyColor('#00b894')"></div>
+                            <div class="swatch" style="background: #f1c40f;" onclick="applyColor('#f1c40f')"></div>
+                            <div class="swatch" style="background: #e67e22;" onclick="applyColor('#e67e22')"></div>
+                            <div class="swatch" style="background: #dfe6e9;" onclick="applyColor('#dfe6e9')"></div>
+                            <div class="swatch" style="background: #2d3436;" onclick="applyColor('#2d3436')"></div>
+                        </div>
+                        <div>
+                            <input type="text" id="hex-input" class="custom-hex-input" placeholder="#HEX or rgb(0,0,0)">
+                            <button class="primary" style="width: 100%; margin-top: 8px; padding: 8px;" onclick="applyCustomHex()">Apply Code</button>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+                    <button class="format-btn" onclick="formatDoc('removeFormat')">🧹 Clear</button>
                 </div>
                 
                 <div id="note-editor" contenteditable="true" placeholder="Start typing... Highlight text to use the formatting tools!"></div>
@@ -227,12 +235,11 @@
     </div>
 
     <script>
-        // State
         let config = JSON.parse(localStorage.getItem('gh_notes_config')) || null;
         let notes = [];
         let activeNote = null;
+        let activeColorMode = null; // 'foreColor' or 'hiliteColor'
 
-        // Theme Initialization
         if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
 
         function toggleTheme() {
@@ -241,7 +248,39 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         }
 
-        // Formatting Tool Command
+        // Custom Color Menu Logic
+        function openColorMenu(mode, event) {
+            const menu = document.getElementById('custom-color-menu');
+            activeColorMode = mode;
+            document.getElementById('color-menu-title').innerText = mode === 'foreColor' ? 'Text Color' : 'Highlight Color';
+            
+            if (menu.style.display === 'flex') {
+                menu.style.display = 'none';
+            } else {
+                menu.style.display = 'flex';
+                // Position menu under the clicked button
+                menu.style.left = (event.target.offsetLeft - 50) + 'px';
+            }
+        }
+
+        function applyColor(color) {
+            formatDoc(activeColorMode, color);
+            document.getElementById('custom-color-menu').style.display = 'none';
+        }
+
+        function applyCustomHex() {
+            const val = document.getElementById('hex-input').value;
+            if (val) applyColor(val);
+        }
+
+        // Close color menu if clicked outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('custom-color-menu');
+            if (menu.style.display === 'flex' && !event.target.closest('#custom-color-menu') && !event.target.classList.contains('color-dot-btn')) {
+                menu.style.display = 'none';
+            }
+        });
+
         function formatDoc(cmd, value = null) {
             document.execCommand(cmd, false, value);
             document.getElementById('note-editor').focus();
@@ -250,7 +289,6 @@
         const toBase64 = str => btoa(unescape(encodeURIComponent(str)));
         const fromBase64 = str => decodeURIComponent(escape(atob(str)));
 
-        // Core API Fetcher
         async function api(path, method = 'GET', body = null) {
             const opts = {
                 method,
@@ -266,7 +304,6 @@
             return res.status === 404 ? null : await res.json();
         }
 
-        // Boot
         if (config && config.token) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'flex';
