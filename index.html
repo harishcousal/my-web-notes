@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Notes Pro</title>
+    <title>Web Notes Pro (Google Drive)</title>
+    <!-- Google Identity Services Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        /* Modern Glassmorphism & Theme Variables */
         :root {
             --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             --glass-bg: rgba(255, 255, 255, 0.6);
@@ -36,23 +37,17 @@
         }
 
         * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
-        
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; height: 100vh; background: var(--bg-gradient); color: var(--text-main); overflow: hidden; }
         
-        /* Glass Panels */
         .glass-panel { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
-
-        /* Screens */
         .screen { display: flex; flex: 1; height: 100%; width: 100%; }
         
         /* Login Screen */
-        #login-screen { flex-direction: column; max-width: 380px; margin: auto; padding: 40px; border-radius: 24px; height: fit-content; }
-        #login-screen h2 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
-        #login-screen input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); margin-bottom: 15px; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; outline: none; }
-        #login-screen input:focus { border-color: var(--accent); }
+        #login-screen { flex-direction: column; max-width: 380px; margin: auto; padding: 40px; border-radius: 24px; height: fit-content; text-align: center; align-items: center; }
+        #login-screen h2 { margin-top: 0; font-weight: 700; }
         
         /* Layout */
-        .sidebar { width: var(--sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--glass-border); z-index: 10; border-radius: 0; }
+        .sidebar { width: var(--sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--glass-border); z-index: 10; }
         .sidebar-header { padding: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--glass-border); }
         .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
         .sidebar-footer { padding: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
@@ -72,7 +67,6 @@
         .note-item:hover, .note-item.active { background: var(--btn-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .note-icon { opacity: 0.7; }
         
-        /* Unified Rich Text Editor */
         .top-bar { display: flex; gap: 12px; padding: 15px 0; margin-bottom: 20px; align-items: center; }
         #note-title { font-size: 3em; font-weight: 800; border: none; margin-bottom: 10px; color: var(--text-main); width: 100%; background: transparent; outline: none; letter-spacing: -1px; }
         
@@ -87,17 +81,14 @@
         [data-theme="dark"] .format-btn:hover { background: rgba(255,255,255,0.1); }
         .divider { width: 1px; height: 24px; background: var(--glass-border); margin: 0 5px; }
 
-        /* Solid Dropdown Menus */
         .custom-menu {
             position: absolute; display: none; flex-direction: column; gap: 2px; padding: 8px; width: 160px;
             border-radius: 16px; z-index: 100; left: 0; top: 100%; margin-top: 8px;
-            background: var(--menu-bg); 
-            border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: var(--menu-bg); border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px;}
         .menu-item:hover { background: var(--btn-hover); }
 
-        /* Autocomplete Menu */
         #link-autocomplete { position: fixed; width: auto; min-width: 180px; max-height: 250px; overflow-y: auto; z-index: 9999; }
 
         .color-dot-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -106,7 +97,6 @@
         .swatch:hover { transform: scale(1.1); }
         .custom-hex-input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px; width: 100%; font-family: monospace; font-size: 13px; outline: none; }
 
-        /* Links */
         .wiki-link {
             color: var(--accent); background: transparent; padding: 1px 6px; border-radius: 6px; border: 1px solid rgba(9, 132, 227, 0.4); text-decoration: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; transition: 0.2s; font-size: 0.95em; margin: 0 2px;
         }
@@ -115,16 +105,12 @@
         #note-editor { flex: 1; outline: none; font-size: 1.15em; line-height: 1.7; padding-bottom: 50px; }
         #note-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
         
-        /* DRAGGABLE & RESIZABLE IMAGE CONTAINERS */
         .img-wrapper { display: inline-block; resize: horizontal; overflow: hidden; max-width: 100%; min-width: 100px; margin: 15px 5px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid var(--glass-border); cursor: grab; vertical-align: middle; background: var(--btn-bg); height: auto !important; line-height: 0; padding: 0; position: relative; }
         .img-wrapper:active { cursor: grabbing; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        
-        /* Removed pointer-events: none so dragging works natively */
-        .img-wrapper img { width: 100%; height: auto; display: block; border-radius: 12px; }
+        .img-wrapper img { width: 100%; height: auto; display: block; border-radius: 12px; cursor: pointer; }
         .img-wrapper::-webkit-resizer { background-color: var(--accent); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--glass-bg); }
         
-        /* NEW: Image Hover Controls */
-        .img-controls { position: absolute; top: 8px; right: 8px; display: none; gap: 6px; z-index: 10; }
+        .img-controls { position: absolute; top: 8px; right: 8px; display: none; gap: 6px; z-index: 10; pointer-events: auto; }
         .img-wrapper:hover .img-controls { display: flex; }
         .img-controls button { background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 8px; padding: 6px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); backdrop-filter: blur(4px); }
         .img-controls button:hover { background: rgba(0,0,0,0.9); transform: scale(1.05); }
@@ -136,26 +122,33 @@
 </head>
 <body>
 
-    <!-- Autocomplete Popup Element -->
     <div id="link-autocomplete" class="custom-menu glass-panel"></div>
 
-    <!-- NEW: Image Preview Modal -->
     <div id="image-modal" class="screen glass-panel" style="display:none; position:fixed; top:0; left:0; z-index:99999; justify-content:center; align-items:center; flex-direction:column; background: rgba(0,0,0,0.8);">
         <button onclick="closeImageModal()" style="position:absolute; top:30px; right:40px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 12px; font-size: 16px; padding: 10px 20px;">Close ❌</button>
         <img id="modal-image" style="max-width:90%; max-height:75%; border-radius:16px; box-shadow:0 15px 40px rgba(0,0,0,0.5);">
         <a id="modal-download" href="#" download="image.jpg" class="primary" style="margin-top:25px; text-decoration:none; padding:12px 24px; border-radius:12px; font-weight: bold; background: var(--accent); color: white;">Download Image ⬇️</a>
     </div>
 
-    <!-- Hidden Input for Replacing Images -->
     <input type="file" id="image-replace-upload" accept="image/*" style="display:none;" onchange="handleImageReplace(event)">
 
+    <!-- Login Screen with Google Sign-In -->
     <div id="login-screen" class="screen glass-panel">
-        <h2>Welcome to Notes</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">Connect your secure GitHub vault.</p>
-        <input id="gh-owner" placeholder="GitHub Username">
-        <input id="gh-repo" placeholder="Repository Name">
-        <input id="gh-token" type="password" placeholder="Personal Access Token">
-        <button class="primary" style="width: 100%; padding: 14px;" onclick="login()">Enter Vault</button>
+        <h2>My Web Notes</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">Sign in to securely sync your notes and attachments to your personal Google Drive.</p>
+        <div id="g_id_onload"
+             data-client_id="YOUR_CLIENT_ID_HERE"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
     </div>
 
     <div id="app-screen" class="screen" style="display:none;">
@@ -166,7 +159,7 @@
             </div>
             <div class="sidebar-content" id="notes-list"></div>
             <div class="sidebar-footer">
-                <button style="width: 100%;" onclick="logout()">Lock & Logout</button>
+                <button style="width: 100%;" onclick="logout()">Sign Out</button>
             </div>
         </div>
         
@@ -178,7 +171,7 @@
                     <button id="btn-attach" onclick="document.getElementById('image-upload').click()">📎 Attach Image</button>
                     
                     <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
-                        <span id="status-msg" style="color: var(--accent); font-size: 13px; font-weight: 600; opacity: 0;">Saved!</span>
+                        <span id="status-msg" style="color: var(--accent); font-size: 13px; font-weight: 600; opacity: 0;">Saved to Drive!</span>
                         <button class="primary" id="btn-save" onclick="saveCurrentNote()">Save Note</button>
                         <button id="btn-delete" class="danger" onclick="deleteCurrentNote()" style="display:none;">Delete</button>
                     </div>
@@ -226,7 +219,7 @@
                     
                     <div class="divider"></div>
 
-                    <button class="format-btn" onclick="insertLink()" title="Type [[ in the editor for instant links!">🔗 Link</button>
+                    <button class="format-btn" onclick="insertLink()" title="Type [[ in editor for instant links!">🔗 Link</button>
 
                     <div class="divider"></div>
                     
@@ -239,12 +232,9 @@
                         <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;" title="Highlight Color">
                             <span style="font-size: 13px; font-weight: bold;">🖌️</span>
                             <div class="color-dot-btn" id="dot-hiliteColor" style="background: #ffeaa7;" onclick="openColorMenu('hiliteColor', event)"></div>
-                            
-                            <!-- THE HIGHLIGHT BREAKOUT BUTTON -->
                             <button class="format-btn" style="padding: 4px;" onclick="clearHighlight()" title="Remove Highlight">❌</button>
                         </div>
 
-                        <!-- Anchored to the right side -->
                         <div id="custom-color-menu" class="custom-menu" style="width: 220px; right: 0; left: auto; padding: 15px;">
                             <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; padding-left: 4px;" id="color-menu-title">Pick Color</div>
                             <div class="swatch-grid">
@@ -260,12 +250,10 @@
                                 <div class="swatch" style="background: #2d3436;" onclick="applyColor('#2d3436')"></div>
                             </div>
                             
-                            <!-- NEW: NATIVE RAINBOW PICKER -->
                             <div style="margin-top: 15px; display: flex; gap: 8px; align-items: center; justify-content: center;">
                                 <input type="color" id="native-color-picker" style="border:none; width:35px; height:35px; padding:0; cursor:pointer; background: transparent; border-radius: 8px;" oninput="applyColor(this.value)">
                                 <span style="font-size: 13px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('native-color-picker').click()">🌈 More Colors...</span>
                             </div>
-
                         </div>
                     </div>
 
@@ -279,12 +267,17 @@
     </div>
 
     <script>
-        let config = JSON.parse(localStorage.getItem('gh_notes_config')) || null;
+        const CLIENT_ID = '735569504579-s76u5p0cq7d23cud342t7aj5td9eqq2o.apps.googleusercontent.com'; // <-- PASTE YOUR GOOGLE CLIENT ID HERE
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+        let tokenClient;
+        let accessToken = localStorage.getItem('gdrive_token') || null;
+        let notesFolderId = null;
         let notes = [];
         let activeNote = null;
         let activeColorMode = null; 
         let activeColorDot = null; 
-        let imageToReplaceTarget = null; // Stores image when clicking replace
+        let imageToReplaceTarget = null;
 
         if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
 
@@ -294,11 +287,101 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         }
 
+        // Initialize Google Identity Services
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: CLIENT_ID,
+                callback: handleCredentialResponse
+            });
+            
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (resp) => {
+                    if (resp.error !== undefined) {
+                        alert("Authentication failed.");
+                        return;
+                    }
+                    accessToken = resp.access_token;
+                    localStorage.setItem('gdrive_token', accessToken);
+                    initializeApp();
+                }
+            });
+
+            if (accessToken) {
+                initializeApp();
+            }
+        };
+
+        function handleCredentialResponse(response) {
+            // Triggers OAuth token flow for Google Drive permissions
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+
+        async function initializeApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+            try {
+                notesFolderId = await getOrCreateFolder('My Web Notes');
+                loadNotesList();
+            } catch(e) {
+                console.error(e);
+                logout();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('gdrive_token');
+            accessToken = null;
+            location.reload();
+        }
+
+        // ==========================================
+        // GOOGLE DRIVE API HELPERS
+        // ==========================================
+        async function gdriveAPI(path, method = 'GET', headers = {}, body = null) {
+            const opts = { method, headers: { 'Authorization': `Bearer ${accessToken}`, ...headers } };
+            if (body) opts.body = body;
+            const res = await fetch(`https://www.googleapis.com/${path}`, opts);
+            if (!res.ok) {
+                if (res.status === 401) logout();
+                throw new Error("Drive API Error");
+            }
+            return res.status === 204 ? null : await res.json();
+        }
+
+        async function getOrCreateFolder(folderName) {
+            const query = encodeURIComponent(`name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
+            const res = await gdriveAPI(`drive/v3/files?q=${query}`);
+            if (res.files && res.files.length > 0) {
+                return res.files[0].id;
+            } else {
+                const metadata = { name: folderName, mimeType: 'application/vnd.google-apps.folder' };
+                const createRes = await gdriveAPI('drive/v3/files', 'POST', { 'Content-Type': 'application/json' }, JSON.stringify(metadata));
+                return createRes.id;
+            }
+        }
+
+        async function loadNotesList() {
+            try {
+                const query = encodeURIComponent(`'${notesFolderId}' in parents and trashed = false`);
+                const res = await gdriveAPI(`drive/v3/files?q=${query}&fields=files(id, name, webContentLink, thumbnailLink)`);
+                notes = res.files.filter(f => f.name.endsWith('.md')).map(f => ({
+                    id: f.id,
+                    title: f.name.replace('.md', ''),
+                    content: null
+                }));
+                renderSidebar();
+            } catch(e) { alert("Could not load Google Drive files."); }
+        }
+
+        // ==========================================
+        // UI & EDITOR LOGIC
+        // ==========================================
         document.getElementById('format-toolbar').addEventListener('mousedown', function(e) {
             if (e.target.tagName !== 'INPUT') { e.preventDefault(); }
         });
 
-        // Autocomplete Logic
         document.getElementById('note-editor').addEventListener('keyup', function(e) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
@@ -343,7 +426,6 @@
             }
         });
 
-        // Hide menus on click away
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#link-autocomplete')) {
                 document.getElementById('link-autocomplete').style.display = 'none';
@@ -355,7 +437,6 @@
             }
         });
 
-        // Dropdowns
         function toggleMenu(id, event) {
             if(event) event.stopPropagation();
             document.querySelectorAll('.custom-menu').forEach(m => {
@@ -365,11 +446,10 @@
             menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        // Color Logic & UI Dot Updating Fix
         function openColorMenu(mode, event) {
             const menu = document.getElementById('custom-color-menu');
             activeColorMode = mode;
-            activeColorDot = event.target; // Track which dot opened the menu
+            activeColorDot = event.target; 
             document.getElementById('color-menu-title').innerText = mode === 'foreColor' ? 'Text Color' : 'Highlight Color';
             
             if (menu.style.display === 'flex') {
@@ -384,10 +464,7 @@
 
         function applyColor(color) {
             formatDoc(activeColorMode, color);
-            // Fix: Actually updates the UI dot in the toolbar to show selected color
-            if (activeColorDot) {
-                activeColorDot.style.background = color;
-            }
+            if (activeColorDot) activeColorDot.style.background = color;
             document.getElementById('custom-color-menu').style.display = 'none';
         }
 
@@ -397,23 +474,19 @@
             if (window.getSelection().isCollapsed) {
                 document.execCommand('insertHTML', false, '<span style="background-color: transparent !important; color: inherit;">&#8203;</span>');
             }
-            document.getElementById('dot-hiliteColor').style.background = '#ffeaa7'; // Reset dot to default yellow
+            document.getElementById('dot-hiliteColor').style.background = '#ffeaa7'; 
             document.getElementById('note-editor').focus();
         }
 
-        // Image Previews & Replacements
         function openImageModal(src) {
             document.getElementById('modal-image').src = src;
             document.getElementById('modal-download').href = src;
             document.getElementById('image-modal').style.display = 'flex';
         }
 
-        function closeImageModal() {
-            document.getElementById('image-modal').style.display = 'none';
-        }
+        function closeImageModal() { document.getElementById('image-modal').style.display = 'none'; }
 
         function triggerImageReplace(btnElement) {
-            // The image is the first child of the parent wrapper
             imageToReplaceTarget = btnElement.closest('.img-wrapper').querySelector('img');
             document.getElementById('image-replace-upload').click();
         }
@@ -421,24 +494,28 @@
         async function handleImageReplace(event) {
             const file = event.target.files[0];
             if (!file || !imageToReplaceTarget) return;
-            
             try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const base64Data = reader.result.split(',')[1]; 
-                    const extension = file.name.split('.').pop();
-                    const filename = `img_${Date.now()}.${extension}`;
-                    const path = `images/${filename}`;
-                    
-                    await api(path, 'PUT', { message: `Replace image ${filename}`, content: base64Data });
-                    
-                    // Update image on screen instantly
-                    imageToReplaceTarget.src = `data:image/${extension};base64,${base64Data}`;
-                    imageToReplaceTarget.setAttribute('data-gh-path', path);
-                    
-                    document.getElementById('image-replace-upload').value = '';
-                };
+                const metadata = { name: `img_${Date.now()}_${file.name}`, parents: [notesFolderId] };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', file);
+                
+                const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}` },
+                    body: form
+                });
+                const fileData = await res.json();
+                const fileUrl = `https://www.googleapis.com/drive/v3/files/${fileData.id}?alt=media`;
+                
+                // Fetch blob with token to render securely
+                const imgRes = await fetch(fileUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                const blob = await imgRes.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                imageToReplaceTarget.src = blobUrl;
+                imageToReplaceTarget.setAttribute('data-drive-id', fileData.id);
+                document.getElementById('image-replace-upload').value = '';
             } catch(e) { alert("Failed to replace image."); }
         }
 
@@ -455,92 +532,13 @@
             document.getElementById('note-editor').focus();
         }
 
-        const toBase64 = str => btoa(unescape(encodeURIComponent(str)));
-        const fromBase64 = str => decodeURIComponent(escape(atob(str)));
-
-        async function api(path, method = 'GET', body = null) {
-            const opts = {
-                method,
-                headers: {
-                    'Authorization': `Bearer ${config.token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'X-GitHub-Api-Version': '2022-11-28'
-                }
-            };
-            if (body) opts.body = JSON.stringify(body);
-            const res = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`, opts);
-            if (!res.ok && res.status !== 404) throw new Error("API Error");
-            return res.status === 404 ? null : await res.json();
-        }
-
-        if (config && config.token) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'flex';
-            loadNotesList();
-        }
-
-        function login() {
-            config = {
-                owner: document.getElementById('gh-owner').value.trim(),
-                repo: document.getElementById('gh-repo').value.trim(),
-                token: document.getElementById('gh-token').value.trim()
-            };
-            if(!config.owner || !config.repo || !config.token) return alert("Fill all fields");
-            localStorage.setItem('gh_notes_config', JSON.stringify(config));
-            location.reload();
-        }
-
-        function logout() {
-            localStorage.removeItem('gh_notes_config');
-            location.reload();
-        }
-
-        async function loadNotesList() {
-            try {
-                const files = await api('notes');
-                if (files) {
-                    notes = files.filter(f => f.name.endsWith('.md')).map(f => ({
-                        title: f.name.replace('.md', ''),
-                        sha: f.sha,
-                        content: null
-                    }));
-                }
-                renderSidebar();
-            } catch(e) { alert("Could not load vault. Check credentials."); logout(); }
-        }
-
-        function renderSidebar() {
-            const list = document.getElementById('notes-list');
-            list.innerHTML = '';
-            notes.sort((a,b) => a.title.localeCompare(b.title)).forEach(note => {
-                const div = document.createElement('div');
-                div.className = activeNote && activeNote.title === note.title ? 'note-item active' : 'note-item';
-                div.innerHTML = `<span class="note-icon">📄</span> ${note.title}`;
-                div.onclick = () => openNote(note.title);
-                list.appendChild(div);
-            });
-        }
-
-        function parseOldMarkdown(text) {
-            if (text.includes('<div') || text.includes('class="img-wrapper"')) return text; 
-            return text
-                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                .replace(/\*(.*)\*/gim, '<em>$1</em>')
-                .replace(/\n/gim, '<br>')
-                .replace(/!\[(.*?)\]\((.*?)\)/gim, '<span class="img-wrapper" contenteditable="false"><img alt="$1" src="$2" data-gh-path="$2"></span>')
-                .replace(/\[\[(.*?)\]\]/g, '<a href="#" class="wiki-link" contenteditable="false" onclick="openNote(\'$1\'); return false;">$1</a>');
-        }
-
         async function openNote(title) {
             document.getElementById('editor-container').style.display = 'flex';
             const editor = document.getElementById('note-editor');
             const titleInput = document.getElementById('note-title');
 
             if (!title) {
-                activeNote = { title: '', content: '', sha: null };
+                activeNote = { title: '', content: '', id: null };
                 titleInput.value = '';
                 editor.innerHTML = '';
                 document.getElementById('btn-delete').style.display = 'none';
@@ -555,45 +553,46 @@
             
             document.getElementById('btn-delete').style.display = 'inline-block';
             titleInput.value = note.title;
-            editor.innerHTML = '<span style="color:var(--text-muted)">Loading secure vault...</span>';
+            editor.innerHTML = '<span style="color:var(--text-muted)">Loading from Google Drive...</span>';
 
-            if (note.sha && note.content === null) {
-                const file = await api(`notes/${title}.md`);
-                if(file) note.content = parseOldMarkdown(fromBase64(file.content));
+            if (note.id && note.content === null) {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${note.id}?alt=media`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                note.content = await res.text();
             }
 
             editor.innerHTML = note.content || '';
 
-            // Inject the new Image Hover Controls and fetch secure private images
+            // Load secure images from Drive
             const imgs = editor.querySelectorAll('img');
             for (let img of imgs) {
                 let wrapper = img.parentElement;
-                
                 if (!wrapper.classList.contains('img-wrapper')) {
                     wrapper = document.createElement('span');
                     wrapper.className = 'img-wrapper';
                     img.parentNode.insertBefore(wrapper, img);
                     wrapper.appendChild(img);
                 }
-
-                // Make draggable and add hover menu dynamically
                 wrapper.setAttribute('contenteditable', 'false');
+                img.setAttribute('onclick', 'openImageModal(this.src)');
+                
                 if (!wrapper.querySelector('.img-controls')) {
                     const controls = document.createElement('div');
                     controls.className = 'img-controls';
-                    controls.innerHTML = `<button onclick="triggerImageReplace(this)" title="Replace Image">🔄</button><button onclick="openImageModal(this.parentElement.previousElementSibling.src)" title="View & Download">🔍</button>`;
+                    controls.innerHTML = `<button onclick="triggerImageReplace(this)" title="Replace Image">🔄</button>`;
                     wrapper.appendChild(controls);
                 }
 
-                let path = img.getAttribute('data-gh-path') || img.getAttribute('src');
-                if (path && path.startsWith('images/')) {
-                    img.setAttribute('data-gh-path', path);
+                let fileId = img.getAttribute('data-drive-id');
+                if (fileId) {
                     try {
-                        const imgFile = await api(path);
-                        if (imgFile && imgFile.content) {
-                            img.src = `data:image/jpeg;base64,${imgFile.content.replace(/\n/g, '')}`;
-                        }
-                    } catch(e) { console.error("Could not load image"); }
+                        const imgRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                            headers: { 'Authorization': `Bearer ${accessToken}` }
+                        });
+                        const blob = await imgRes.blob();
+                        img.src = URL.createObjectURL(blob);
+                    } catch(e) { console.error("Could not load Drive image"); }
                 }
             }
         }
@@ -601,31 +600,34 @@
         async function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             const btn = document.getElementById('btn-attach');
-            btn.innerHTML = '⏳ Uploading...';
+            btn.innerHTML = '⏳ Uploading to Drive...';
             
             try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const base64Data = reader.result.split(',')[1]; 
-                    const extension = file.name.split('.').pop();
-                    const filename = `img_${Date.now()}.${extension}`;
-                    const path = `images/${filename}`;
-                    
-                    await api(path, 'PUT', { message: `Upload image ${filename}`, content: base64Data });
-                    
-                    document.getElementById('note-editor').focus();
-                    
-                    // Creates draggable block with hover controls built-in
-                    const imgHtml = `&nbsp;<span class="img-wrapper" contenteditable="false"><img src="data:image/${extension};base64,${base64Data}" data-gh-path="${path}" alt="${file.name}"><div class="img-controls"><button onclick="triggerImageReplace(this)" title="Replace Image">🔄</button><button onclick="openImageModal(this.parentElement.previousElementSibling.src)" title="View & Download">🔍</button></div></span>&nbsp;`;
-                    document.execCommand('insertHTML', false, imgHtml);
-                    
-                    btn.innerHTML = '📎 Attach Image';
-                };
+                const metadata = { name: `img_${Date.now()}_${file.name}`, parents: [notesFolderId] };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', file);
+                
+                const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}` },
+                    body: form
+                });
+                const fileData = await res.json();
+                
+                const imgRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileData.id}?alt=media`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const blob = await imgRes.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                document.getElementById('note-editor').focus();
+                const imgHtml = `&nbsp;<span class="img-wrapper" contenteditable="false"><img src="${blobUrl}" data-drive-id="${fileData.id}" alt="${file.name}" onclick="openImageModal(this.src)"><div class="img-controls"><button onclick="triggerImageReplace(this)" title="Replace Image">🔄</button></div></span>&nbsp;`;
+                document.execCommand('insertHTML', false, imgHtml);
+                btn.innerHTML = '📎 Attach Image';
             } catch(e) {
-                alert("Failed to upload. Check permissions.");
+                alert("Failed to upload image to Drive.");
                 btn.innerHTML = '📎 Attach Image';
             }
         }
@@ -641,65 +643,81 @@
             try {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = editor.innerHTML;
-                
-                // Cleanup: Strips huge base64 data and removes the hover buttons from the saved file so the backend file stays clean
-                tempDiv.querySelectorAll('img').forEach(img => {
-                    if (img.getAttribute('data-gh-path')) { img.src = img.getAttribute('data-gh-path'); }
-                });
                 tempDiv.querySelectorAll('.img-controls').forEach(ctrl => ctrl.remove());
                 
-                const rawContent = tempDiv.innerHTML;
-                const finalContent = parseOldMarkdown(rawContent);
-                
-                const path = `notes/${title}.md`;
-                let sha = activeNote.sha;
-                if (!sha) {
-                    const check = await api(path);
-                    if (check) sha = check.sha;
+                const finalContent = tempDiv.innerHTML;
+                const fileName = `${title}.md`;
+
+                if (activeNote && activeNote.id) {
+                    // Update existing file content
+                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${activeNote.id}?uploadType=media`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'text/markdown' },
+                        body: finalContent
+                    });
+                    // Rename if title changed
+                    if (activeNote.title !== title) {
+                        await gdriveAPI(`drive/v3/files/${activeNote.id}`, 'PATCH', { 'Content-Type': 'application/json' }, JSON.stringify({ name: fileName }));
+                    }
+                } else {
+                    // Create new file
+                    const metadata = { name: fileName, parents: [notesFolderId] };
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', new Blob([finalContent], { type: 'text/markdown' }));
+                    
+                    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${accessToken}` },
+                        body: form
+                    });
+                    const fileData = await res.json();
+                    activeNote = { id: fileData.id, title, content: finalContent };
+                    notes.push(activeNote);
                 }
 
-                const body = { message: `Update: ${title}`, content: toBase64(finalContent) };
-                if (sha) body.sha = sha;
-
-                const res = await api(path, 'PUT', body);
-                
                 activeNote.title = title;
-                activeNote.content = finalContent; 
-                activeNote.sha = res.content.sha;
+                activeNote.content = finalContent;
                 
-                if (!notes.find(n => n.title === title)) notes.push(activeNote);
-                
-                // Keep the controls visible in the live editor after saving
-                editor.innerHTML = finalContent;
-                openNote(title); 
-                
+                renderSidebar();
+                document.getElementById('btn-delete').style.display = 'inline-block';
+                openNote(title);
+
                 status.style.opacity = '1';
                 setTimeout(() => status.style.opacity = '0', 3000);
             } catch(e) {
-                alert("Failed to save vault.");
+                alert("Failed to save to Google Drive.");
             }
             btn.textContent = 'Save Note';
         }
 
         async function deleteCurrentNote() {
-            if (!activeNote || !activeNote.sha) return;
-            if (!confirm(`Permanently delete "${activeNote.title}"?`)) return;
+            if (!activeNote || !activeNote.id) return;
+            if (!confirm(`Permanently delete "${activeNote.title}" from Google Drive?`)) return;
 
             const btn = document.getElementById('btn-delete');
             btn.textContent = 'Deleting...';
 
             try {
-                await api(`notes/${activeNote.title}.md`, 'DELETE', {
-                    message: `Note deleted: ${activeNote.title}`,
-                    sha: activeNote.sha
-                });
-                notes = notes.filter(n => n.title !== activeNote.title);
+                await gdriveAPI(`drive/v3/files/${activeNote.id}`, 'DELETE');
+                notes = notes.filter(n => n.id !== activeNote.id);
                 activeNote = null;
-                
                 renderSidebar();
                 document.getElementById('editor-container').style.display = 'none';
             } catch(e) { alert("Failed to delete."); }
             btn.textContent = 'Delete';
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            notes.sort((a,b) => a.title.localeCompare(b.title)).forEach(note => {
+                const div = document.createElement('div');
+                div.className = activeNote && activeNote.title === note.title ? 'note-item active' : 'note-item';
+                div.innerHTML = `<span class="note-icon">📄</span> ${note.title}`;
+                div.onclick = () => openNote(note.title);
+                list.appendChild(div);
+            });
         }
     </script>
 </body>
