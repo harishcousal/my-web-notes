@@ -33,6 +33,8 @@
         button:hover { background: var(--sidebar); }
         button.primary { background: #2ea043; color: white; border: none; }
         button.primary:hover { background: #2c974b; }
+        button.danger { color: #d73a49; border-color: #d73a49; margin-left: 10px; }
+        button.danger:hover { background: #ffeef0; }
         
         /* Note List */
         .note-item { padding: 8px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -44,9 +46,9 @@
         #note-preview { flex: 1; font-size: 1.1em; line-height: 1.6; overflow-y: auto; }
         .wiki-link { color: var(--link); text-decoration: none; border-bottom: 1px solid var(--link); font-weight: 500; }
         
-        .tabs { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .tabs button { background: none; border: none; padding: 4px 8px; font-size: 16px; color: #888; }
-        .tabs button.active { color: var(--text); font-weight: bold; }
+        .tabs { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; align-items: center; }
+        .tabs button.tab-btn { background: none; border: none; padding: 4px 8px; font-size: 16px; color: #888; }
+        .tabs button.tab-btn.active { color: var(--text); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -72,9 +74,12 @@
             <input id="note-title" placeholder="Untitled Note">
             
             <div class="tabs">
-                <button id="tab-edit" class="active" onclick="toggleMode('edit')">Edit</button>
-                <button id="tab-preview" onclick="toggleMode('preview')">Preview</button>
-                <button class="primary" style="margin-left: auto;" onclick="saveCurrentNote()">Save to GitHub</button>
+                <button id="tab-edit" class="tab-btn active" onclick="toggleMode('edit')">Edit</button>
+                <button id="tab-preview" class="tab-btn" onclick="toggleMode('preview')">Preview</button>
+                <div style="margin-left: auto;">
+                    <button class="primary" onclick="saveCurrentNote()">Save to GitHub</button>
+                    <button id="btn-delete" class="danger" onclick="deleteCurrentNote()" style="display:none;">Delete</button>
+                </div>
             </div>
             
             <textarea id="note-editor" placeholder="Start typing... Use [[Note Name]] to link to other notes!"></textarea>
@@ -169,6 +174,7 @@
                 activeNote = { title: '', content: '', sha: null };
                 document.getElementById('note-title').value = '';
                 document.getElementById('note-editor').value = '';
+                document.getElementById('btn-delete').style.display = 'none'; // Hide delete for unsaved note
                 return;
             }
 
@@ -177,7 +183,12 @@
             // If linked note doesn't exist yet, create temporary shell
             if (!note) {
                 note = { title, content: '', sha: null };
-            } else if (note.sha && note.content === null) {
+                document.getElementById('btn-delete').style.display = 'none';
+            } else {
+                document.getElementById('btn-delete').style.display = 'inline-block';
+            }
+
+            if (note.sha && note.content === null) {
                 // Fetch content from GitHub if we only have the SHA
                 document.getElementById('note-editor').value = 'Loading...';
                 const file = await api(`notes/${title}.md`);
@@ -224,6 +235,7 @@
                 
                 renderSidebar();
                 document.getElementById('status-msg').style.display = 'block';
+                document.getElementById('btn-delete').style.display = 'inline-block'; // Show delete now that it's saved
                 setTimeout(() => document.getElementById('status-msg').style.display = 'none', 3000);
             } catch(e) {
                 alert("Failed to save. Check internet or token permissions.");
@@ -231,11 +243,41 @@
             btn.textContent = 'Save to GitHub';
         }
 
+        async function deleteCurrentNote() {
+            if (!activeNote || !activeNote.sha) return;
+            
+            const confirmed = confirm(`Are you sure you want to delete "${activeNote.title}"? This cannot be undone.`);
+            if (!confirmed) return;
+
+            const btn = document.getElementById('btn-delete');
+            btn.textContent = 'Deleting...';
+
+            try {
+                const path = `notes/${activeNote.title}.md`;
+                const body = {
+                    message: `Note deleted: ${activeNote.title}`,
+                    sha: activeNote.sha
+                };
+
+                await api(path, 'DELETE', body);
+                
+                // Remove from local state
+                notes = notes.filter(n => n.title !== activeNote.title);
+                activeNote = null;
+                
+                renderSidebar();
+                document.getElementById('editor-container').style.display = 'none';
+            } catch(e) {
+                alert("Failed to delete. Check internet connection.");
+            }
+            btn.textContent = 'Delete';
+        }
+
         function toggleMode(mode) {
             const edit = document.getElementById('note-editor');
             const preview = document.getElementById('note-preview');
-            document.getElementById('tab-edit').className = mode === 'edit' ? 'active' : '';
-            document.getElementById('tab-preview').className = mode === 'preview' ? 'active' : '';
+            document.getElementById('tab-edit').className = mode === 'edit' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tab-preview').className = mode === 'preview' ? 'tab-btn active' : 'tab-btn';
 
             if (mode === 'edit') {
                 edit.style.display = 'block';
