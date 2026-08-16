@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Notes</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --sidebar: #f7f6f3;
+            --border: #e1e1e1;
+            --text: #37352f;
+            --link: #eb5757;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background: var(--bg); color: var(--text); }
+        
+        /* Screens */
+        .screen { display: flex; flex: 1; height: 100%; width: 100%; }
+        
+        /* Login Screen */
+        #login-screen { flex-direction: column; max-width: 350px; margin: 100px auto; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
+        #login-screen h2 { margin-top: 0; }
+        #login-screen input { border: 1px solid var(--border); margin-bottom: 15px; padding: 10px; border-radius: 4px; width: 100%; font-size: 14px; }
+        
+        /* App Screen */
+        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
+        .main { flex: 1; padding: 40px; display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; width: 100%; }
+        
+        /* Elements */
+        input:focus, textarea:focus { outline: none; }
+        button { cursor: pointer; background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; font-weight: 500; font-size: 14px; transition: 0.1s; }
+        button:hover { background: var(--sidebar); }
+        button.primary { background: #2ea043; color: white; border: none; }
+        button.primary:hover { background: #2c974b; }
+        
+        /* Note List */
+        .note-item { padding: 8px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .note-item:hover { background: #e8e7e4; }
+        
+        /* Editor */
+        #note-title { font-size: 2.5em; font-weight: 700; border: none; margin-bottom: 15px; color: var(--text); width: 100%; }
+        #note-editor { flex: 1; border: none; resize: none; font-size: 1.1em; line-height: 1.6; font-family: inherit; }
+        #note-preview { flex: 1; font-size: 1.1em; line-height: 1.6; overflow-y: auto; }
+        .wiki-link { color: var(--link); text-decoration: none; border-bottom: 1px solid var(--link); font-weight: 500; }
+        
+        .tabs { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tabs button { background: none; border: none; padding: 4px 8px; font-size: 16px; color: #888; }
+        .tabs button.active { color: var(--text); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen">
+        <h2>Connect GitHub</h2>
+        <p style="font-size: 13px; color: #666;">Notes will be saved as markdown files in a /notes folder in your repo.</p>
+        <input id="gh-owner" placeholder="GitHub Username">
+        <input id="gh-repo" placeholder="Repository Name">
+        <input id="gh-token" type="password" placeholder="Personal Access Token">
+        <button class="primary" onclick="login()">Start Taking Notes</button>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="screen" style="display:none;">
+        <div class="sidebar">
+            <button onclick="openNote('')">+ New Note</button>
+            <div style="margin-top: 20px;" id="notes-list"></div>
+            <button style="margin-top: auto;" onclick="logout()">Logout</button>
+        </div>
+        <div class="main" id="editor-container" style="display:none;">
+            <input id="note-title" placeholder="Untitled Note">
+            
+            <div class="tabs">
+                <button id="tab-edit" class="active" onclick="toggleMode('edit')">Edit</button>
+                <button id="tab-preview" onclick="toggleMode('preview')">Preview</button>
+                <button class="primary" style="margin-left: auto;" onclick="saveCurrentNote()">Save to GitHub</button>
+            </div>
+            
+            <textarea id="note-editor" placeholder="Start typing... Use [[Note Name]] to link to other notes!"></textarea>
+            <div id="note-preview" style="display:none;"></div>
+            
+            <p id="status-msg" style="color: #2ea043; font-size: 13px; display: none;">Saved successfully!</p>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let config = JSON.parse(localStorage.getItem('gh_notes_config')) || null;
+        let notes = [];
+        let activeNote = null;
+
+        // Base64 encoding for GitHub API (handles Unicode/Emoji correctly)
+        const toBase64 = str => btoa(unescape(encodeURIComponent(str)));
+        const fromBase64 = str => decodeURIComponent(escape(atob(str)));
+
+        // Core API Fetcher
+        async function api(path, method = 'GET', body = null) {
+            const opts = {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${config.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}`, opts);
+            if (!res.ok && res.status !== 404) throw new Error("API Error");
+            return res.status === 404 ? null : await res.json();
+        }
+
+        // Boot
+        if (config && config.token) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+            loadNotesList();
+        }
+
+        function login() {
+            config = {
+                owner: document.getElementById('gh-owner').value.trim(),
+                repo: document.getElementById('gh-repo').value.trim(),
+                token: document.getElementById('gh-token').value.trim()
+            };
+            if(!config.owner || !config.repo || !config.token) return alert("Fill all fields");
+            localStorage.setItem('gh_notes_config', JSON.stringify(config));
+            location.reload();
+        }
+
+        function logout() {
+            localStorage.removeItem('gh_notes_config');
+            location.reload();
+        }
+
+        async function loadNotesList() {
+            try {
+                const files = await api('notes');
+                if (files) {
+                    notes = files.filter(f => f.name.endsWith('.md')).map(f => ({
+                        title: f.name.replace('.md', ''),
+                        sha: f.sha,
+                        content: null // Content loaded on demand
+                    }));
+                }
+                renderSidebar();
+            } catch(e) { alert("Could not load repo. Check your credentials."); logout(); }
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            notes.sort((a,b) => a.title.localeCompare(b.title)).forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'note-item';
+                div.textContent = '📄 ' + note.title;
+                div.onclick = () => openNote(note.title);
+                list.appendChild(div);
+            });
+        }
+
+        async function openNote(title) {
+            document.getElementById('editor-container').style.display = 'flex';
+            document.getElementById('status-msg').style.display = 'none';
+            toggleMode('edit');
+
+            if (!title) {
+                // New Note
+                activeNote = { title: '', content: '', sha: null };
+                document.getElementById('note-title').value = '';
+                document.getElementById('note-editor').value = '';
+                return;
+            }
+
+            let note = notes.find(n => n.title === title);
+            
+            // If linked note doesn't exist yet, create temporary shell
+            if (!note) {
+                note = { title, content: '', sha: null };
+            } else if (note.sha && note.content === null) {
+                // Fetch content from GitHub if we only have the SHA
+                document.getElementById('note-editor').value = 'Loading...';
+                const file = await api(`notes/${title}.md`);
+                if(file) note.content = fromBase64(file.content);
+            }
+
+            activeNote = note;
+            document.getElementById('note-title').value = note.title;
+            document.getElementById('note-editor').value = note.content || '';
+        }
+
+        async function saveCurrentNote() {
+            const title = document.getElementById('note-title').value.trim() || 'Untitled';
+            const content = document.getElementById('note-editor').value;
+            const path = `notes/${title}.md`;
+
+            const btn = document.querySelector('.tabs .primary');
+            btn.textContent = 'Saving...';
+
+            try {
+                // Get fresh SHA if file exists to allow updates
+                let sha = activeNote.sha;
+                if (!sha) {
+                    const check = await api(path);
+                    if (check) sha = check.sha;
+                }
+
+                const body = {
+                    message: `Note updated: ${title}`,
+                    content: toBase64(content)
+                };
+                if (sha) body.sha = sha;
+
+                const res = await api(path, 'PUT', body);
+                
+                // Update Local State
+                activeNote.title = title;
+                activeNote.content = content;
+                activeNote.sha = res.content.sha;
+                
+                if (!notes.find(n => n.title === title)) {
+                    notes.push(activeNote);
+                }
+                
+                renderSidebar();
+                document.getElementById('status-msg').style.display = 'block';
+                setTimeout(() => document.getElementById('status-msg').style.display = 'none', 3000);
+            } catch(e) {
+                alert("Failed to save. Check internet or token permissions.");
+            }
+            btn.textContent = 'Save to GitHub';
+        }
+
+        function toggleMode(mode) {
+            const edit = document.getElementById('note-editor');
+            const preview = document.getElementById('note-preview');
+            document.getElementById('tab-edit').className = mode === 'edit' ? 'active' : '';
+            document.getElementById('tab-preview').className = mode === 'preview' ? 'active' : '';
+
+            if (mode === 'edit') {
+                edit.style.display = 'block';
+                preview.style.display = 'none';
+            } else {
+                edit.style.display = 'none';
+                preview.style.display = 'block';
+                renderPreview(edit.value);
+            }
+        }
+
+        function renderPreview(content) {
+            // Simple Markdown Parsing
+            let html = content
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/\n/gim, '<br>');
+                
+            // Convert [[Wiki Links]] to clickable actions
+            html = html.replace(/\[\[(.*?)\]\]/g, '<a href="#" class="wiki-link" onclick="openNote(\'$1\'); return false;">$1</a>');
+            
+            document.getElementById('note-preview').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
