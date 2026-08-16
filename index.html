@@ -18,7 +18,7 @@
             --accent: #0984e3;
             --danger: #d63031;
             --sidebar-width: 280px;
-            --menu-bg: #ffffff; /* Solid for dropdowns */
+            --menu-bg: #ffffff; 
         }
 
         [data-theme="dark"] {
@@ -32,7 +32,7 @@
             --btn-hover: rgba(0, 0, 0, 0.7);
             --accent: #74b9ff;
             --danger: #ff7675;
-            --menu-bg: #2d3436; /* Solid for dropdowns */
+            --menu-bg: #2d3436; 
         }
 
         * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
@@ -76,7 +76,7 @@
         .top-bar { display: flex; gap: 12px; padding: 15px 0; margin-bottom: 20px; align-items: center; }
         #note-title { font-size: 3em; font-weight: 800; border: none; margin-bottom: 10px; color: var(--text-main); width: 100%; background: transparent; outline: none; letter-spacing: -1px; }
         
-        /* Wordpad-style Formatting Toolbar */
+        /* Formatting Toolbar */
         .format-toolbar {
             display: flex; gap: 5px; flex-wrap: wrap; align-items: center; background: var(--glass-bg); padding: 10px 15px; border-radius: 16px;
             border: 1px solid var(--glass-border); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 5;
@@ -91,11 +91,14 @@
         .custom-menu {
             position: absolute; display: none; flex-direction: column; gap: 2px; padding: 8px; width: 160px;
             border-radius: 16px; z-index: 100; left: 0; top: 100%; margin-top: 8px;
-            background: var(--menu-bg); /* Solid color so it doesn't overlap weirdly */
+            background: var(--menu-bg); 
             border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px;}
         .menu-item:hover { background: var(--btn-hover); }
+
+        /* Autocomplete Menu Specifics */
+        #link-autocomplete { position: fixed; width: auto; min-width: 180px; max-height: 250px; overflow-y: auto; z-index: 9999; }
 
         .color-dot-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .swatch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -103,11 +106,11 @@
         .swatch:hover { transform: scale(1.1); }
         .custom-hex-input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px; width: 100%; font-family: monospace; font-size: 13px; outline: none; }
 
-        /* Links & Editor - Box Style Instead of Arrow */
+        /* REFINED LINK BOX */
         .wiki-link {
-            color: var(--accent); background: transparent; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent); text-decoration: none; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; transition: 0.2s;
+            color: var(--accent); background: transparent; padding: 1px 6px; border-radius: 6px; border: 1px solid rgba(9, 132, 227, 0.4); text-decoration: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; transition: 0.2s; font-size: 0.95em; margin: 0 2px;
         }
-        .wiki-link:hover { background: rgba(9, 132, 227, 0.1); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .wiki-link:hover { background: rgba(9, 132, 227, 0.1); border-color: rgba(9, 132, 227, 0.8); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         
         #note-editor { flex: 1; outline: none; font-size: 1.15em; line-height: 1.7; padding-bottom: 50px; }
         #note-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
@@ -124,6 +127,9 @@
     </style>
 </head>
 <body>
+
+    <!-- Autocomplete Popup Element -->
+    <div id="link-autocomplete" class="custom-menu glass-panel"></div>
 
     <div id="login-screen" class="screen glass-panel">
         <h2>Welcome to Notes</h2>
@@ -202,11 +208,11 @@
                     
                     <div class="divider"></div>
 
-                    <button class="format-btn" onclick="insertLink()" title="Link to another note">🔗 Link</button>
+                    <!-- REPLACED: Added title text instead of just standard prompt -->
+                    <button class="format-btn" onclick="insertLink()" title="Type [[ in the editor for instant links!">🔗 Link</button>
 
                     <div class="divider"></div>
                     
-                    <!-- NEW WRAPPER TO KEEP COLOR MENU ON SCREEN -->
                     <div style="position: relative; display: flex; align-items: center; gap: 5px;">
                         <div style="display: flex; align-items: center; gap: 5px;" title="Text Color">
                             <span style="font-size: 13px; font-weight: bold;">A</span>
@@ -216,11 +222,12 @@
                         <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;" title="Highlight Color">
                             <span style="font-size: 13px; font-weight: bold;">🖌️</span>
                             <div class="color-dot-btn" style="background: #ffeaa7;" onclick="openColorMenu('hiliteColor', event)"></div>
-                            <!-- FIXED HIGHLIGHT REMOVAL -->
-                            <button class="format-btn" style="padding: 4px;" onclick="formatDoc('hiliteColor', 'transparent'); formatDoc('backColor', 'transparent');" title="Remove Highlight">❌</button>
+                            
+                            <!-- THE HIGHLIGHT BREAKOUT BUTTON -->
+                            <button class="format-btn" style="padding: 4px;" onclick="clearHighlight()" title="Remove Highlight">❌</button>
                         </div>
 
-                        <!-- Anchored to the right side so it never flies off screen -->
+                        <!-- Anchored to the right side -->
                         <div id="custom-color-menu" class="custom-menu" style="width: 220px; right: 0; left: auto; padding: 15px;">
                             <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; padding-left: 4px;" id="color-menu-title">Pick Color</div>
                             <div class="swatch-grid">
@@ -248,7 +255,7 @@
 
                 <input id="note-title" placeholder="Untitled Note">
                 
-                <div id="note-editor" contenteditable="true" placeholder="Start typing... Highlight text to use the formatting tools!"></div>
+                <div id="note-editor" contenteditable="true" placeholder="Start typing... Type [[ to link notes!"></div>
             </div>
         </div>
     </div>
@@ -271,20 +278,105 @@
             if (e.target.tagName !== 'INPUT') { e.preventDefault(); }
         });
 
+        // ==========================================
+        // NEW: AUTOCOMPLETE ENGINE FOR [[ LINKS
+        // ==========================================
+        document.getElementById('note-editor').addEventListener('keyup', function(e) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            const node = range.startContainer;
+            
+            // Only trigger in normal text nodes
+            if (node.nodeType !== Node.TEXT_NODE) return;
+            
+            const text = node.textContent.substring(0, range.startOffset);
+            
+            // Checks if you typed [[ followed by any text
+            const match = text.match(/\[\[([^\]]*)$/);
+            const menu = document.getElementById('link-autocomplete');
+            
+            if (match) {
+                const searchStr = match[1].toLowerCase();
+                const filteredNotes = notes.filter(n => n.title.toLowerCase().includes(searchStr));
+                
+                if (filteredNotes.length > 0) {
+                    menu.innerHTML = '';
+                    filteredNotes.forEach(note => {
+                        const div = document.createElement('div');
+                        div.className = 'menu-item';
+                        div.innerHTML = `<span style="opacity:0.5; font-size: 16px;">📄</span> ${note.title}`;
+                        
+                        // When a note is clicked in the autocomplete menu
+                        div.onmousedown = (ev) => {
+                            ev.preventDefault(); 
+                            
+                            // Select the [[text you just typed so we can overwrite it
+                            const replaceRange = document.createRange();
+                            replaceRange.setStart(node, range.startOffset - match[0].length);
+                            replaceRange.setEnd(node, range.startOffset);
+                            selection.removeAllRanges();
+                            selection.addRange(replaceRange);
+                            
+                            // Inject the shiny new link box
+                            const linkHtml = `<a href="#" class="wiki-link" contenteditable="false" onclick="openNote('${note.title}'); return false;">${note.title}</a>&nbsp;`;
+                            document.execCommand('insertHTML', false, linkHtml);
+                            
+                            menu.style.display = 'none';
+                        };
+                        menu.appendChild(div);
+                    });
+                    
+                    // Position menu exactly under your cursor
+                    const rect = range.getBoundingClientRect();
+                    menu.style.left = rect.left + 'px';
+                    menu.style.top = (rect.bottom + 5) + 'px';
+                    menu.style.display = 'flex';
+                } else {
+                    menu.style.display = 'none';
+                }
+            } else {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Hide autocomplete menu if you click away
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#link-autocomplete')) {
+                document.getElementById('link-autocomplete').style.display = 'none';
+            }
+            if (!e.target.closest('.custom-menu') && !e.target.classList.contains('format-btn') && !e.target.classList.contains('color-dot-btn')) {
+                document.querySelectorAll('.custom-menu').forEach(m => {
+                    if (m.id !== 'link-autocomplete') m.style.display = 'none';
+                });
+            }
+        });
+
+        // ==========================================
+        // NEW: HIGHLIGHT BREAKOUT FIX
+        // ==========================================
+        function clearHighlight() {
+            // Clears color from highlighted text
+            document.execCommand('hiliteColor', false, 'transparent');
+            document.execCommand('backColor', false, 'transparent');
+            
+            // If you are just typing and want to stop the highlight, we insert an invisible, unformatted space
+            if (window.getSelection().isCollapsed) {
+                document.execCommand('insertHTML', false, '<span style="background-color: transparent !important; color: inherit;">&#8203;</span>');
+            }
+            document.getElementById('note-editor').focus();
+        }
+
+        // Dropdown & Menu Logic
         function toggleMenu(id, event) {
             if(event) event.stopPropagation();
             document.querySelectorAll('.custom-menu').forEach(m => {
-                if (m.id !== id) m.style.display = 'none';
+                if (m.id !== id && m.id !== 'link-autocomplete') m.style.display = 'none';
             });
             const menu = document.getElementById(id);
             menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
         }
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-menu') && !e.target.classList.contains('format-btn') && !e.target.classList.contains('color-dot-btn')) {
-                document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-            }
-        });
 
         function openColorMenu(mode, event) {
             const menu = document.getElementById('custom-color-menu');
@@ -294,7 +386,9 @@
             if (menu.style.display === 'flex') {
                 menu.style.display = 'none';
             } else {
-                document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+                document.querySelectorAll('.custom-menu').forEach(m => {
+                    if(m.id !== 'link-autocomplete') m.style.display = 'none';
+                });
                 menu.style.display = 'flex';
             }
         }
@@ -309,7 +403,6 @@
             if (val) applyColor(val);
         }
 
-        // Updated Link format (no arrow)
         function insertLink() {
             let noteName = prompt("Enter the exact name of the note you want to link to:");
             if(noteName) {
@@ -389,7 +482,7 @@
             });
         }
 
-        // Updated Old Link Parser (no arrow)
+        // Still auto-parses old notes just in case
         function parseOldMarkdown(text) {
             if (text.includes('<div') || text.includes('class="img-wrapper"')) return text; 
             return text
@@ -504,10 +597,7 @@
                     }
                 });
                 
-                // INSTANT LINK AUTO-PARSING: Parses your typed [[links]] immediately on save
-                const rawContent = tempDiv.innerHTML;
-                const finalContent = parseOldMarkdown(rawContent);
-                
+                const finalContent = tempDiv.innerHTML;
                 const path = `notes/${title}.md`;
 
                 let sha = activeNote.sha;
@@ -526,9 +616,6 @@
                 activeNote.sha = res.content.sha;
                 
                 if (!notes.find(n => n.title === title)) notes.push(activeNote);
-                
-                // Instantly update editor to show the parsed links you just typed
-                editor.innerHTML = finalContent;
                 
                 renderSidebar();
                 document.getElementById('btn-delete').style.display = 'inline-block';
