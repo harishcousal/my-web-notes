@@ -3,92 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Notes</title>
+    <title>GitHub Notes Pro</title>
     <style>
+        /* Modern Glassmorphism & Theme Variables */
         :root {
-            --bg: #ffffff;
-            --sidebar: #f7f6f3;
-            --border: #e1e1e1;
-            --text: #37352f;
-            --link: #eb5757;
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --btn-bg: rgba(255, 255, 255, 0.8);
+            --btn-hover: rgba(255, 255, 255, 1);
+            --accent: #0984e3;
+            --danger: #d63031;
+            --sidebar-width: 280px;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background: var(--bg); color: var(--text); }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1e272e 0%, #000000 100%);
+            --glass-bg: rgba(30, 39, 46, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            --text-main: #f5f6fa;
+            --text-muted: #a4b0be;
+            --btn-bg: rgba(0, 0, 0, 0.4);
+            --btn-hover: rgba(0, 0, 0, 0.7);
+            --accent: #74b9ff;
+            --danger: #ff7675;
+        }
+
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
         
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            background: var(--bg-gradient); 
+            color: var(--text-main); 
+            overflow: hidden;
+        }
+        
+        /* Glass Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+        }
+
         /* Screens */
         .screen { display: flex; flex: 1; height: 100%; width: 100%; }
         
         /* Login Screen */
-        #login-screen { flex-direction: column; max-width: 350px; margin: 100px auto; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
-        #login-screen h2 { margin-top: 0; }
-        #login-screen input { border: 1px solid var(--border); margin-bottom: 15px; padding: 10px; border-radius: 4px; width: 100%; font-size: 14px; }
+        #login-screen { flex-direction: column; max-width: 380px; margin: auto; padding: 40px; border-radius: 24px; box-shadow: var(--glass-shadow); height: fit-content; }
+        #login-screen h2 { margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
+        #login-screen input { 
+            background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); 
+            margin-bottom: 15px; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; outline: none;
+        }
+        #login-screen input:focus { border-color: var(--accent); }
         
-        /* App Screen */
-        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
-        .main { flex: 1; padding: 40px; display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; width: 100%; }
+        /* Layout */
+        .sidebar { width: var(--sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--glass-border); z-index: 10; }
+        .sidebar-header { padding: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--glass-border); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
         
-        /* Elements */
-        input:focus, textarea:focus { outline: none; }
-        button { cursor: pointer; background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; font-weight: 500; font-size: 14px; transition: 0.1s; }
-        button:hover { background: var(--sidebar); }
-        button.primary { background: #2ea043; color: white; border: none; }
-        button.primary:hover { background: #2c974b; }
-        button.danger { color: #d73a49; border-color: #d73a49; margin-left: 10px; }
-        button.danger:hover { background: #ffeef0; }
-        button.action-btn { font-size: 14px; color: #555; display: flex; align-items: center; gap: 5px; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 40px; }
+        .editor-wrapper { max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; flex: 1; }
+        
+        /* Buttons */
+        button { cursor: pointer; background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        button:hover { background: var(--btn-hover); transform: translateY(-1px); }
+        button.primary { background: var(--accent); color: #fff; border: none; box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3); }
+        button.primary:hover { background: #0097e6; color: #fff; }
+        button.danger { color: var(--danger); border-color: rgba(214, 48, 49, 0.3); }
+        button.icon-btn { display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 50%; width: 42px; height: 42px; }
         
         /* Note List */
-        .note-item { padding: 8px; margin: 4px 0; cursor: pointer; border-radius: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .note-item:hover { background: #e8e7e4; }
+        .note-item { padding: 12px 15px; margin: 4px 0; cursor: pointer; border-radius: 12px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .note-item:hover, .note-item.active { background: var(--btn-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .note-icon { opacity: 0.7; }
         
-        /* Editor */
-        #note-title { font-size: 2.5em; font-weight: 700; border: none; margin-bottom: 15px; color: var(--text); width: 100%; background: transparent; }
-        #note-editor { flex: 1; border: none; resize: none; font-size: 1.1em; line-height: 1.6; font-family: inherit; }
-        #note-preview { flex: 1; font-size: 1.1em; line-height: 1.6; overflow-y: auto; }
-        .wiki-link { color: var(--link); text-decoration: none; border-bottom: 1px solid var(--link); font-weight: 500; }
+        /* Unified Rich Text Editor */
+        .top-bar { display: flex; gap: 12px; padding: 15px 0; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); align-items: center; }
         
-        .toolbar { margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; align-items: center; }
+        #note-title { font-size: 3em; font-weight: 800; border: none; margin-bottom: 10px; color: var(--text-main); width: 100%; background: transparent; outline: none; letter-spacing: -1px; }
+        
+        /* Wordpad-style Formatting Toolbar */
+        .format-toolbar {
+            display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+            background: var(--glass-bg); padding: 10px 15px; border-radius: 16px;
+            border: 1px solid var(--glass-border); margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: -40px; z-index: 5;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        }
+        .format-btn {
+            background: transparent; border: none; border-radius: 8px; padding: 6px 10px; font-size: 15px; font-weight: bold; cursor: pointer; color: var(--text-main); box-shadow: none;
+        }
+        .format-btn:hover { background: rgba(0,0,0,0.05); transform: none; }
+        [data-theme="dark"] .format-btn:hover { background: rgba(255,255,255,0.1); }
+        .format-select {
+            background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 10px; outline: none; font-family: inherit; font-size: 13px; cursor: pointer;
+        }
+        .color-picker {
+            border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; padding: 0; background: transparent; overflow: hidden;
+        }
+        .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker::-webkit-color-swatch { border: 1px solid var(--glass-border); border-radius: 50%; }
+        .divider { width: 1px; height: 24px; background: var(--glass-border); margin: 0 5px; }
+
+        #note-editor { flex: 1; outline: none; font-size: 1.15em; line-height: 1.7; padding-bottom: 50px; }
+        #note-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
+        
+        /* Draggable Images */
+        .note-image { max-width: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); cursor: grab; margin: 20px 0; transition: transform 0.2s; border: 1px solid var(--glass-border); }
+        .note-image:active { cursor: grabbing; transform: scale(0.98); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <!-- Login Screen -->
-    <div id="login-screen" class="screen">
-        <h2>Connect GitHub</h2>
-        <p style="font-size: 13px; color: #666;">Notes will be saved as markdown files in a /notes folder in your repo.</p>
+    <div id="login-screen" class="screen glass-panel">
+        <h2>Welcome to Notes</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">Connect your secure GitHub vault.</p>
         <input id="gh-owner" placeholder="GitHub Username">
         <input id="gh-repo" placeholder="Repository Name">
         <input id="gh-token" type="password" placeholder="Personal Access Token">
-        <button class="primary" onclick="login()">Start Taking Notes</button>
+        <button class="primary" style="width: 100%; padding: 14px;" onclick="login()">Enter Vault</button>
     </div>
 
     <!-- Main App -->
     <div id="app-screen" class="screen" style="display:none;">
-        <div class="sidebar">
-            <button onclick="openNote('')">+ New Note</button>
-            <div style="margin-top: 20px;" id="notes-list"></div>
-            <button style="margin-top: auto;" onclick="logout()">Logout</button>
-        </div>
-        <div class="main" id="editor-container" style="display:none;">
-            <input id="note-title" placeholder="Untitled Note">
-            
-            <div class="toolbar">
-                <button id="btn-toggle-mode" class="action-btn" onclick="toggleMode()">✏️ Edit</button>
-                
-                <!-- Hidden file input for images -->
-                <input type="file" id="image-upload" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-                <button id="btn-attach" class="action-btn" onclick="document.getElementById('image-upload').click()" style="display:none;">📎 Attach Image</button>
-                
-                <div style="margin-left: auto;">
-                    <button class="primary" id="btn-save" onclick="saveCurrentNote()" style="display:none;">Save Note</button>
-                    <button id="btn-delete" class="danger" onclick="deleteCurrentNote()" style="display:none;">Delete</button>
-                </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <button class="primary" style="flex:1;" onclick="openNote('')">+ New Note</button>
+                <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌗</button>
             </div>
-            
-            <textarea id="note-editor" placeholder="Start typing... Use [[Note Name]] to link to other notes!" style="display:none;"></textarea>
-            <div id="note-preview"></div>
-            
-            <p id="status-msg" style="color: #2ea043; font-size: 13px; display: none;">Saved successfully!</p>
+            <div class="sidebar-content" id="notes-list"></div>
+            <div class="sidebar-footer">
+                <button style="width: 100%;" onclick="logout()">Lock & Logout</button>
+            </div>
+        </div>
+        
+        <!-- Main Editor Area -->
+        <div class="main">
+            <div class="editor-wrapper" id="editor-container" style="display:none;">
+                
+                <div class="top-bar">
+                    <input type="file" id="image-upload" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+                    <button id="btn-attach" onclick="document.getElementById('image-upload').click()">📎 Attach Image</button>
+                    
+                    <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                        <span id="status-msg" style="color: var(--accent); font-size: 13px; font-weight: 600; opacity: 0;">Saved!</span>
+                        <button class="primary" id="btn-save" onclick="saveCurrentNote()">Save Note</button>
+                        <button id="btn-delete" class="danger" onclick="deleteCurrentNote()" style="display:none;">Delete</button>
+                    </div>
+                </div>
+
+                <input id="note-title" placeholder="Untitled Note">
+                
+                <!-- NEW FORMATTING TOOLBAR -->
+                <div class="format-toolbar" id="format-toolbar">
+                    <select class="format-select" onchange="formatDoc('fontName', this.value)">
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Comic Sans MS">Comic Sans</option>
+                    </select>
+                    <select class="format-select" onchange="formatDoc('fontSize', this.value)">
+                        <option value="3">Normal Size</option>
+                        <option value="1">Smallest</option>
+                        <option value="2">Small</option>
+                        <option value="4">Large</option>
+                        <option value="5">Larger</option>
+                        <option value="6">Huge</option>
+                    </select>
+                    
+                    <div class="divider"></div>
+                    
+                    <button class="format-btn" onclick="formatDoc('bold')" title="Bold"><b>B</b></button>
+                    <button class="format-btn" onclick="formatDoc('italic')" title="Italic"><i>I</i></button>
+                    <button class="format-btn" onclick="formatDoc('underline')" title="Underline"><u>U</u></button>
+                    <button class="format-btn" onclick="formatDoc('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                    
+                    <div class="divider"></div>
+                    
+                    <button class="format-btn" onclick="formatDoc('justifyLeft')" title="Align Left">⬅️</button>
+                    <button class="format-btn" onclick="formatDoc('justifyCenter')" title="Align Center">↔️</button>
+                    <button class="format-btn" onclick="formatDoc('justifyRight')" title="Align Right">➡️</button>
+                    
+                    <div class="divider"></div>
+                    
+                    <button class="format-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet List">● List</button>
+                    <button class="format-btn" onclick="formatDoc('insertOrderedList')" title="Numbered List">1. List</button>
+                    
+                    <div class="divider"></div>
+                    
+                    <div style="display: flex; align-items: center; gap: 5px;" title="Text Color">
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: bold;">A</span>
+                        <input type="color" class="color-picker" onchange="formatDoc('foreColor', this.value)" value="#0984e3">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px; margin-left: 5px;" title="Highlight Color">
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: bold;">🖌️</span>
+                        <input type="color" class="color-picker" onchange="formatDoc('hiliteColor', this.value)" value="#ffeaa7">
+                    </div>
+                </div>
+                
+                <div id="note-editor" contenteditable="true" placeholder="Start typing... Highlight text to use the formatting tools!"></div>
+            </div>
         </div>
     </div>
 
@@ -97,9 +231,22 @@
         let config = JSON.parse(localStorage.getItem('gh_notes_config')) || null;
         let notes = [];
         let activeNote = null;
-        let isEditing = false;
 
-        // Base64 encoding for GitHub API
+        // Theme Initialization
+        if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        // Formatting Tool Command
+        function formatDoc(cmd, value = null) {
+            document.execCommand(cmd, false, value);
+            document.getElementById('note-editor').focus();
+        }
+
         const toBase64 = str => btoa(unescape(encodeURIComponent(str)));
         const fromBase64 = str => decodeURIComponent(escape(atob(str)));
 
@@ -153,7 +300,7 @@
                     }));
                 }
                 renderSidebar();
-            } catch(e) { alert("Could not load repo. Check your credentials."); logout(); }
+            } catch(e) { alert("Could not load vault. Check credentials."); logout(); }
         }
 
         function renderSidebar() {
@@ -161,76 +308,67 @@
             list.innerHTML = '';
             notes.sort((a,b) => a.title.localeCompare(b.title)).forEach(note => {
                 const div = document.createElement('div');
-                div.className = 'note-item';
-                div.textContent = '📄 ' + note.title;
+                div.className = activeNote && activeNote.title === note.title ? 'note-item active' : 'note-item';
+                div.innerHTML = `<span class="note-icon">📄</span> ${note.title}`;
                 div.onclick = () => openNote(note.title);
                 list.appendChild(div);
             });
         }
 
+        function parseOldMarkdown(text) {
+            if (text.includes('<div') || text.includes('class="note-image"')) return text; 
+            return text
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/\n/gim, '<br>')
+                .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img alt="$1" src="$2" data-gh-path="$2" class="note-image">');
+        }
+
         async function openNote(title) {
             document.getElementById('editor-container').style.display = 'flex';
-            document.getElementById('status-msg').style.display = 'none';
+            const editor = document.getElementById('note-editor');
+            const titleInput = document.getElementById('note-title');
 
             if (!title) {
-                // Open new notes directly in Edit Mode
                 activeNote = { title: '', content: '', sha: null };
-                document.getElementById('note-title').value = '';
-                document.getElementById('note-editor').value = '';
+                titleInput.value = '';
+                editor.innerHTML = '';
                 document.getElementById('btn-delete').style.display = 'none';
-                
-                isEditing = false; // Will be flipped to true
-                toggleMode();
+                renderSidebar();
+                titleInput.focus();
                 return;
             }
 
             let note = notes.find(n => n.title === title);
+            activeNote = note;
+            renderSidebar();
             
-            if (!note) {
-                note = { title, content: '', sha: null };
-                document.getElementById('btn-delete').style.display = 'none';
-            } else {
-                document.getElementById('btn-delete').style.display = 'inline-block';
-            }
+            document.getElementById('btn-delete').style.display = 'inline-block';
+            titleInput.value = note.title;
+            editor.innerHTML = '<span style="color:var(--text-muted)">Loading secure vault...</span>';
 
             if (note.sha && note.content === null) {
-                document.getElementById('note-preview').innerHTML = '<p style="color:#888;">Loading...</p>';
                 const file = await api(`notes/${title}.md`);
-                if(file) note.content = fromBase64(file.content);
+                if(file) note.content = parseOldMarkdown(fromBase64(file.content));
             }
 
-            activeNote = note;
-            document.getElementById('note-title').value = note.title;
-            document.getElementById('note-editor').value = note.content || '';
-            
-            // Open existing notes in Preview Mode
-            isEditing = true; // Will be flipped to false
-            toggleMode();
-        }
+            editor.innerHTML = note.content || '';
 
-        function toggleMode() {
-            isEditing = !isEditing;
-            const edit = document.getElementById('note-editor');
-            const preview = document.getElementById('note-preview');
-            const btnToggle = document.getElementById('btn-toggle-mode');
-            const btnAttach = document.getElementById('btn-attach');
-            const btnSave = document.getElementById('btn-save');
-
-            if (isEditing) {
-                // Switch to Edit Mode
-                edit.style.display = 'block';
-                preview.style.display = 'none';
-                btnToggle.innerHTML = '👁️ Preview';
-                btnAttach.style.display = 'inline-flex';
-                btnSave.style.display = 'inline-block';
-            } else {
-                // Switch to Preview Mode
-                edit.style.display = 'none';
-                preview.style.display = 'block';
-                btnToggle.innerHTML = '✏️ Edit';
-                btnAttach.style.display = 'none';
-                btnSave.style.display = 'none';
-                renderPreview(edit.value);
+            const imgs = editor.querySelectorAll('img');
+            for (let img of imgs) {
+                let path = img.getAttribute('data-gh-path') || img.getAttribute('src');
+                if (path && path.startsWith('images/')) {
+                    img.setAttribute('data-gh-path', path);
+                    try {
+                        const imgFile = await api(path);
+                        if (imgFile && imgFile.content) {
+                            img.src = `data:image/jpeg;base64,${imgFile.content.replace(/\n/g, '')}`;
+                        }
+                    } catch(e) { console.error("Could not load image"); }
+                }
             }
         }
 
@@ -239,80 +377,82 @@
             if (!file) return;
             
             const btn = document.getElementById('btn-attach');
-            const originalText = btn.innerHTML;
             btn.innerHTML = '⏳ Uploading...';
             
             try {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = async () => {
-                    // Extract raw base64 data
                     const base64Data = reader.result.split(',')[1]; 
                     const extension = file.name.split('.').pop();
                     const filename = `img_${Date.now()}.${extension}`;
                     const path = `images/${filename}`;
                     
-                    // Save image to GitHub
-                    await api(path, 'PUT', {
-                        message: `Upload image ${filename}`,
-                        content: base64Data
-                    });
+                    await api(path, 'PUT', { message: `Upload image ${filename}`, content: base64Data });
                     
-                    // Insert markdown into editor
-                    const editor = document.getElementById('note-editor');
-                    const imgMarkdown = `\n![${file.name}](images/${filename})\n`;
+                    document.getElementById('note-editor').focus();
+                    const imgHtml = `<img src="data:image/${extension};base64,${base64Data}" data-gh-path="${path}" class="note-image" alt="${file.name}"><br><br>`;
+                    document.execCommand('insertHTML', false, imgHtml);
                     
-                    const startPos = editor.selectionStart;
-                    const endPos = editor.selectionEnd;
-                    editor.value = editor.value.substring(0, startPos) + imgMarkdown + editor.value.substring(endPos, editor.value.length);
-                    
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = '📎 Attach Image';
                 };
             } catch(e) {
-                alert("Failed to upload image. Check permissions.");
-                btn.innerHTML = originalText;
+                alert("Failed to upload. Check permissions.");
+                btn.innerHTML = '📎 Attach Image';
             }
         }
 
         async function saveCurrentNote() {
             const title = document.getElementById('note-title').value.trim() || 'Untitled';
-            const content = document.getElementById('note-editor').value;
-            const path = `notes/${title}.md`;
-
+            const editor = document.getElementById('note-editor');
             const btn = document.getElementById('btn-save');
+            const status = document.getElementById('status-msg');
+            
             btn.textContent = 'Saving...';
 
             try {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = editor.innerHTML;
+                tempDiv.querySelectorAll('img').forEach(img => {
+                    if (img.getAttribute('data-gh-path')) {
+                        img.src = img.getAttribute('data-gh-path'); 
+                    }
+                });
+                
+                const finalContent = tempDiv.innerHTML;
+                const path = `notes/${title}.md`;
+
                 let sha = activeNote.sha;
                 if (!sha) {
                     const check = await api(path);
                     if (check) sha = check.sha;
                 }
 
-                const body = { message: `Note updated: ${title}`, content: toBase64(content) };
+                const body = { message: `Update: ${title}`, content: toBase64(finalContent) };
                 if (sha) body.sha = sha;
 
                 const res = await api(path, 'PUT', body);
                 
                 activeNote.title = title;
-                activeNote.content = content;
+                activeNote.content = finalContent; 
                 activeNote.sha = res.content.sha;
                 
                 if (!notes.find(n => n.title === title)) notes.push(activeNote);
                 
                 renderSidebar();
-                document.getElementById('status-msg').style.display = 'block';
                 document.getElementById('btn-delete').style.display = 'inline-block';
-                setTimeout(() => document.getElementById('status-msg').style.display = 'none', 3000);
+                
+                status.style.opacity = '1';
+                setTimeout(() => status.style.opacity = '0', 3000);
             } catch(e) {
-                alert("Failed to save. Check internet or token permissions.");
+                alert("Failed to save vault.");
             }
             btn.textContent = 'Save Note';
         }
 
         async function deleteCurrentNote() {
             if (!activeNote || !activeNote.sha) return;
-            if (!confirm(`Are you sure you want to delete "${activeNote.title}"?`)) return;
+            if (!confirm(`Permanently delete "${activeNote.title}"?`)) return;
 
             const btn = document.getElementById('btn-delete');
             btn.textContent = 'Deleting...';
@@ -322,7 +462,6 @@
                     message: `Note deleted: ${activeNote.title}`,
                     sha: activeNote.sha
                 });
-                
                 notes = notes.filter(n => n.title !== activeNote.title);
                 activeNote = null;
                 
@@ -330,42 +469,6 @@
                 document.getElementById('editor-container').style.display = 'none';
             } catch(e) { alert("Failed to delete."); }
             btn.textContent = 'Delete';
-        }
-
-        function renderPreview(content) {
-            let html = content
-                // Parse Image syntax FIRST: ![alt](url)
-                .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img alt="$1" data-src="$2" class="private-image" style="max-width:100%; border-radius:8px; margin: 15px 0; border: 1px solid #e1e1e1;">')
-                // Parse formatting
-                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                .replace(/\*(.*)\*/gim, '<em>$1</em>')
-                .replace(/\n/gim, '<br>');
-                
-            // Parse Wiki Links
-            html = html.replace(/\[\[(.*?)\]\]/g, '<a href="#" class="wiki-link" onclick="openNote(\'$1\'); return false;">$1</a>');
-            
-            document.getElementById('note-preview').innerHTML = html;
-            loadPrivateImages(); // Securely fetch images
-        }
-
-        // Fetches private images using the GitHub Token and displays them
-        async function loadPrivateImages() {
-            const imgs = document.querySelectorAll('.private-image');
-            for (let img of imgs) {
-                const path = img.getAttribute('data-src');
-                if (path && path.startsWith('images/')) {
-                    try {
-                        const file = await api(path);
-                        if (file && file.content) {
-                            // Strip newlines from GitHub's base64 response
-                            img.src = `data:image/jpeg;base64,${file.content.replace(/\n/g, '')}`;
-                        }
-                    } catch(e) { console.error("Could not load image:", path); }
-                }
-            }
         }
     </script>
 </body>
