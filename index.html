@@ -18,6 +18,7 @@
             --accent: #0984e3;
             --danger: #d63031;
             --sidebar-width: 280px;
+            --menu-bg: #ffffff; /* Solid for dropdowns */
         }
 
         [data-theme="dark"] {
@@ -31,6 +32,7 @@
             --btn-hover: rgba(0, 0, 0, 0.7);
             --accent: #74b9ff;
             --danger: #ff7675;
+            --menu-bg: #2d3436; /* Solid for dropdowns */
         }
 
         * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
@@ -85,10 +87,12 @@
         [data-theme="dark"] .format-btn:hover { background: rgba(255,255,255,0.1); }
         .divider { width: 1px; height: 24px; background: var(--glass-border); margin: 0 5px; }
 
-        /* Custom Glass Menus (Dropdowns & Colors) */
+        /* Solid Dropdown Menus */
         .custom-menu {
             position: absolute; display: none; flex-direction: column; gap: 2px; padding: 8px; width: 160px;
             border-radius: 16px; z-index: 100; left: 0; top: 100%; margin-top: 8px;
+            background: var(--menu-bg); /* Solid color so it doesn't overlap weirdly */
+            border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); }
         .menu-item:hover { background: var(--btn-hover); }
@@ -99,48 +103,20 @@
         .swatch:hover { transform: scale(1.1); }
         .custom-hex-input { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px; width: 100%; font-family: monospace; font-size: 13px; outline: none; }
 
-        /* Links & Editor */
+        /* Links & Editor - Box Style Instead of Arrow */
         .wiki-link {
-            color: var(--accent); background: rgba(9, 132, 227, 0.1); padding: 4px 8px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; transition: 0.2s;
+            color: var(--accent); background: transparent; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent); text-decoration: none; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; transition: 0.2s;
         }
-        .wiki-link:hover { background: rgba(9, 132, 227, 0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .wiki-link:hover { background: rgba(9, 132, 227, 0.1); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         
         #note-editor { flex: 1; outline: none; font-size: 1.15em; line-height: 1.7; padding-bottom: 50px; }
         #note-editor[placeholder]:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
         
         /* DRAGGABLE & RESIZABLE IMAGE CONTAINERS */
-        .img-wrapper {
-            display: inline-block;
-            resize: horizontal; /* Allows dragging edges horizontally to scale */
-            overflow: hidden;
-            max-width: 100%;
-            min-width: 100px; /* Prevents shrinking too small */
-            margin: 15px 5px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            border: 1px solid var(--glass-border);
-            cursor: grab;
-            vertical-align: middle;
-            background: var(--btn-bg);
-            height: auto !important; /* Forces aspect ratio lock */
-            line-height: 0;
-            padding: 0;
-            position: relative;
-        }
+        .img-wrapper { display: inline-block; resize: horizontal; overflow: hidden; max-width: 100%; min-width: 100px; margin: 15px 5px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid var(--glass-border); cursor: grab; vertical-align: middle; background: var(--btn-bg); height: auto !important; line-height: 0; padding: 0; position: relative; }
         .img-wrapper:active { cursor: grabbing; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .img-wrapper img {
-            width: 100%;
-            height: auto;
-            display: block;
-            pointer-events: none; /* Passes click to wrapper so you can drag and resize */
-            border-radius: 12px;
-        }
-        /* Style the custom drag handle */
-        .img-wrapper::-webkit-resizer {
-            background-color: var(--accent);
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 2px var(--glass-bg);
-        }
+        .img-wrapper img { width: 100%; height: auto; display: block; pointer-events: none; border-radius: 12px; }
+        .img-wrapper::-webkit-resizer { background-color: var(--accent); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--glass-bg); }
         
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -187,7 +163,7 @@
                 <div class="format-toolbar" id="format-toolbar">
                     <div style="position: relative;">
                         <button class="format-btn" onclick="toggleMenu('font-menu', event)" style="font-size: 13px; font-weight: normal; border: 1px solid var(--glass-border);">Font ▾</button>
-                        <div id="font-menu" class="custom-menu glass-panel">
+                        <div id="font-menu" class="custom-menu">
                             <div class="menu-item" style="font-family: Arial;" onclick="formatDoc('fontName', 'Arial'); toggleMenu('font-menu')">Arial</div>
                             <div class="menu-item" style="font-family: 'Courier New';" onclick="formatDoc('fontName', 'Courier New'); toggleMenu('font-menu')">Courier New</div>
                             <div class="menu-item" style="font-family: Georgia;" onclick="formatDoc('fontName', 'Georgia'); toggleMenu('font-menu')">Georgia</div>
@@ -198,7 +174,7 @@
 
                     <div style="position: relative;">
                         <button class="format-btn" onclick="toggleMenu('size-menu', event)" style="font-size: 13px; font-weight: normal; border: 1px solid var(--glass-border);">Size ▾</button>
-                        <div id="size-menu" class="custom-menu glass-panel" style="width: 120px;">
+                        <div id="size-menu" class="custom-menu" style="width: 120px;">
                             <div class="menu-item" onclick="formatDoc('fontSize', '3'); toggleMenu('size-menu')">Normal</div>
                             <div class="menu-item" onclick="formatDoc('fontSize', '1'); toggleMenu('size-menu')">Tiny</div>
                             <div class="menu-item" onclick="formatDoc('fontSize', '5'); toggleMenu('size-menu')">Large</div>
@@ -230,34 +206,39 @@
 
                     <div class="divider"></div>
                     
-                    <div style="display: flex; align-items: center; gap: 5px; position: relative;" title="Text Color">
-                        <span style="font-size: 13px; font-weight: bold;">A</span>
-                        <div class="color-dot-btn" style="background: #0984e3;" onclick="openColorMenu('foreColor', event)"></div>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px; position: relative;" title="Highlight Color">
-                        <span style="font-size: 13px; font-weight: bold;">🖌️</span>
-                        <div class="color-dot-btn" style="background: #ffeaa7;" onclick="openColorMenu('hiliteColor', event)"></div>
-                        <button class="format-btn" style="padding: 4px;" onclick="formatDoc('hiliteColor', 'transparent')" title="Remove Highlight">❌</button>
-                    </div>
-
-                    <div id="custom-color-menu" class="custom-menu glass-panel" style="width: 220px;">
-                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; padding-left: 4px;" id="color-menu-title">Pick Color</div>
-                        <div class="swatch-grid">
-                            <div class="swatch" style="background: #d63031;" onclick="applyColor('#d63031')"></div>
-                            <div class="swatch" style="background: #e84393;" onclick="applyColor('#e84393')"></div>
-                            <div class="swatch" style="background: #9b59b6;" onclick="applyColor('#9b59b6')"></div>
-                            <div class="swatch" style="background: #0984e3;" onclick="applyColor('#0984e3')"></div>
-                            <div class="swatch" style="background: #00cec9;" onclick="applyColor('#00cec9')"></div>
-                            <div class="swatch" style="background: #00b894;" onclick="applyColor('#00b894')"></div>
-                            <div class="swatch" style="background: #f1c40f;" onclick="applyColor('#f1c40f')"></div>
-                            <div class="swatch" style="background: #e67e22;" onclick="applyColor('#e67e22')"></div>
-                            <div class="swatch" style="background: #dfe6e9;" onclick="applyColor('#dfe6e9')"></div>
-                            <div class="swatch" style="background: #2d3436;" onclick="applyColor('#2d3436')"></div>
+                    <!-- NEW WRAPPER TO KEEP COLOR MENU ON SCREEN -->
+                    <div style="position: relative; display: flex; align-items: center; gap: 5px;">
+                        <div style="display: flex; align-items: center; gap: 5px;" title="Text Color">
+                            <span style="font-size: 13px; font-weight: bold;">A</span>
+                            <div class="color-dot-btn" style="background: #0984e3;" onclick="openColorMenu('foreColor', event)"></div>
                         </div>
-                        <div style="margin-top: 10px;">
-                            <input type="text" id="hex-input" class="custom-hex-input" placeholder="#HEX or rgb()">
-                            <button class="primary" style="width: 100%; margin-top: 8px; padding: 8px;" onclick="applyCustomHex()">Apply Code</button>
+                        
+                        <div style="display: flex; align-items: center; gap: 5px; margin-left: 10px;" title="Highlight Color">
+                            <span style="font-size: 13px; font-weight: bold;">🖌️</span>
+                            <div class="color-dot-btn" style="background: #ffeaa7;" onclick="openColorMenu('hiliteColor', event)"></div>
+                            <!-- FIXED HIGHLIGHT REMOVAL -->
+                            <button class="format-btn" style="padding: 4px;" onclick="formatDoc('hiliteColor', 'transparent'); formatDoc('backColor', 'transparent');" title="Remove Highlight">❌</button>
+                        </div>
+
+                        <!-- Anchored to the right side so it never flies off screen -->
+                        <div id="custom-color-menu" class="custom-menu" style="width: 220px; right: 0; left: auto; padding: 15px;">
+                            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; padding-left: 4px;" id="color-menu-title">Pick Color</div>
+                            <div class="swatch-grid">
+                                <div class="swatch" style="background: #d63031;" onclick="applyColor('#d63031')"></div>
+                                <div class="swatch" style="background: #e84393;" onclick="applyColor('#e84393')"></div>
+                                <div class="swatch" style="background: #9b59b6;" onclick="applyColor('#9b59b6')"></div>
+                                <div class="swatch" style="background: #0984e3;" onclick="applyColor('#0984e3')"></div>
+                                <div class="swatch" style="background: #00cec9;" onclick="applyColor('#00cec9')"></div>
+                                <div class="swatch" style="background: #00b894;" onclick="applyColor('#00b894')"></div>
+                                <div class="swatch" style="background: #f1c40f;" onclick="applyColor('#f1c40f')"></div>
+                                <div class="swatch" style="background: #e67e22;" onclick="applyColor('#e67e22')"></div>
+                                <div class="swatch" style="background: #dfe6e9;" onclick="applyColor('#dfe6e9')"></div>
+                                <div class="swatch" style="background: #2d3436;" onclick="applyColor('#2d3436')"></div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="text" id="hex-input" class="custom-hex-input" placeholder="#HEX or rgb()">
+                                <button class="primary" style="width: 100%; margin-top: 8px; padding: 8px;" onclick="applyCustomHex()">Apply Code</button>
+                            </div>
                         </div>
                     </div>
 
@@ -286,11 +267,8 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         }
 
-        // PREVENT TOOLBAR FROM STEALING FOCUS FROM HIGHLIGHTED TEXT
         document.getElementById('format-toolbar').addEventListener('mousedown', function(e) {
-            if (e.target.tagName !== 'INPUT') {
-                e.preventDefault();
-            }
+            if (e.target.tagName !== 'INPUT') { e.preventDefault(); }
         });
 
         function toggleMenu(id, event) {
@@ -318,7 +296,6 @@
             } else {
                 document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
                 menu.style.display = 'flex';
-                menu.style.left = (event.target.getBoundingClientRect().left - 280) + 'px'; 
             }
         }
 
@@ -332,10 +309,11 @@
             if (val) applyColor(val);
         }
 
+        // Updated Link format (no arrow)
         function insertLink() {
             let noteName = prompt("Enter the exact name of the note you want to link to:");
             if(noteName) {
-                let linkHtml = `<a href="#" class="wiki-link" contenteditable="false" onclick="openNote('${noteName}'); return false;">↗ ${noteName}</a>&nbsp;`;
+                let linkHtml = `<a href="#" class="wiki-link" contenteditable="false" onclick="openNote('${noteName}'); return false;">${noteName}</a>&nbsp;`;
                 document.execCommand('insertHTML', false, linkHtml);
             }
         }
@@ -411,6 +389,7 @@
             });
         }
 
+        // Updated Old Link Parser (no arrow)
         function parseOldMarkdown(text) {
             if (text.includes('<div') || text.includes('class="img-wrapper"')) return text; 
             return text
@@ -421,7 +400,7 @@
                 .replace(/\*(.*)\*/gim, '<em>$1</em>')
                 .replace(/\n/gim, '<br>')
                 .replace(/!\[(.*?)\]\((.*?)\)/gim, '<span class="img-wrapper"><img alt="$1" src="$2" data-gh-path="$2"></span>')
-                .replace(/\[\[(.*?)\]\]/g, '<a href="#" class="wiki-link" contenteditable="false" onclick="openNote(\'$1\'); return false;">↗ $1</a>');
+                .replace(/\[\[(.*?)\]\]/g, '<a href="#" class="wiki-link" contenteditable="false" onclick="openNote(\'$1\'); return false;">$1</a>');
         }
 
         async function openNote(title) {
@@ -456,8 +435,6 @@
 
             const imgs = editor.querySelectorAll('img');
             for (let img of imgs) {
-                
-                // NEW: Auto-upgrade any old, non-wrapped images to the resizable container format
                 if (!img.parentElement.classList.contains('img-wrapper')) {
                     const wrapper = document.createElement('span');
                     wrapper.className = 'img-wrapper';
@@ -499,7 +476,6 @@
                     
                     document.getElementById('note-editor').focus();
                     
-                    // NEW: Wrap uploaded images in the resizable container
                     const imgHtml = `&nbsp;<span class="img-wrapper"><img src="data:image/${extension};base64,${base64Data}" data-gh-path="${path}" alt="${file.name}"></span>&nbsp;`;
                     document.execCommand('insertHTML', false, imgHtml);
                     
@@ -528,7 +504,10 @@
                     }
                 });
                 
-                const finalContent = tempDiv.innerHTML;
+                // INSTANT LINK AUTO-PARSING: Parses your typed [[links]] immediately on save
+                const rawContent = tempDiv.innerHTML;
+                const finalContent = parseOldMarkdown(rawContent);
+                
                 const path = `notes/${title}.md`;
 
                 let sha = activeNote.sha;
@@ -547,6 +526,9 @@
                 activeNote.sha = res.content.sha;
                 
                 if (!notes.find(n => n.title === title)) notes.push(activeNote);
+                
+                // Instantly update editor to show the parsed links you just typed
+                editor.innerHTML = finalContent;
                 
                 renderSidebar();
                 document.getElementById('btn-delete').style.display = 'inline-block';
